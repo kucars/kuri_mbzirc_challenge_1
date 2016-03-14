@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>kuri_mbzirc_challenge_1</name>
+  <version>0.1.0</version>
+  <description>MBZIRC Challenge 1 related code</description>
+
+  <maintainer email="tarek@tarektaha.com">Tarek Taha</maintainer>
+  
+  <license>BSD</license>
+
+  <url type="website">https://github.com/kuri-kustar</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>kuri_mbzirc_sim</build_depend>
+
+  <run_depend>kuri_mbzirc_sim</run_depend>
+  <run_depend>rviz</run_depend>
+
+  <export>
+  </export>
+</package>
