@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   <arg name="paused"              default="false"/>
   <arg name="debug"               default="false"/>
@@ -26,11 +27,12 @@
       <arg name="x" value="65.0"/>
       <arg name="y" value="-25.0"/>
       <arg name="Y" value="3.14"/> 
+      <arg name="name" value="$(arg ns)"/>
     </include>  
   </group>
   
   <include file="$(find px4)/launch/ardrone.launch">
-  <arg name="ns" value="$(arg ns)"/>
+    <arg name="ns" value="$(arg ns)"/>
   </include>
   
   <include file="$(find px4)/launch/mavros_sitl.launch">

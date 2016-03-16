@@ -97,7 +97,6 @@ class SetpointPosition:
         def is_near(msg, x, y):
             rospy.logdebug("Position %s: local: %d, target: %d, abs diff: %d",
                            msg, x, y, abs(x - y))
-            print abs(x-y)
             return abs(x - y) < 0.5
         self.currentPoseX = topic.pose.position.x 
         self.currentPoseY = topic.pose.position.y
