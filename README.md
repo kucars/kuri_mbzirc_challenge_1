@@ -1,4 +1,4 @@
-# kuri_mbzirc_challenge_1
+# KURI MBZIRC Challenge 1
 Challenge 1 related tasks implementation
 
 In order run the challenge, the following Packages are needed: 
