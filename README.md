@@ -32,4 +32,5 @@ $ source /Tools/setup_gazebo.bash $(pwd) $(pwd)/build_posix_sitl_default
 $ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)
 $ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)/Tools/sitl_gazebo
 $ roslaunch kuri_mbzirc_challenge_1 task.launch
+$ roslaunch kuri_mbzirc_challenge_1 truck.launch
 ```
