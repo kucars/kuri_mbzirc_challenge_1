@@ -21,6 +21,9 @@ install(DIRECTORY launch urdf config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
+add_executable(off_board src/off_board.cpp)
+target_link_libraries(off_board ${catkin_LIBRARIES})
+
 
 #############
 ## Testing ##
