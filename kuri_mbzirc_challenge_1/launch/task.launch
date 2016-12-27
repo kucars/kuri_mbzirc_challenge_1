@@ -57,23 +57,19 @@
         <arg name="config_yaml" value="$(arg config_yaml)" />
     </include>
 
-
     <param name="robot_description" textfile="$(find kuri_mbzirc_sim)/urdf/$(arg vehicle)/iris_with_sensors.urdf"
      />
 
       <!-- send the robot XML to param server -->
-
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
 
       <!-- Given the published joint states, publish tf for the robot links -->
       <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-  <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_world" args="0 0 0 0 0 0 /map /world 500"/> 
-   <node pkg="tf" type="static_transform_publisher" name="world_to_base_link" args="0 0 0 0 0 0 /world /base_link 500"/> 
- 
--->
+    <!-- running truck --> 
+    <include file="$(find kuri_mbzirc_challenge_1)/launch/truck.launch"></include>
+
 
 
 </launch>
 
-<!-- vim: set et ft=xml fenc=utf-8 ff=unix sts=0 sw=4 ts=4 : -->
