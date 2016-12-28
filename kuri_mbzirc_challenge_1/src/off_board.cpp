@@ -9,7 +9,7 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
-
+bool flag = true ;
 mavros_msgs::State current_state;
 void state_cb(const mavros_msgs::State::ConstPtr& msg){
     current_state = *msg;
@@ -76,9 +76,17 @@ int main(int argc, char **argv)
                 last_request = ros::Time::now();
             }
         }
-
-        local_pos_pub.publish(pose);
-
+    /*    if (flag == true && current_state.mode != "OFFBOARD")
+        {
+            local_pos_pub.publish(pose);
+        }
+        if (flag == true && current_state.mode == "OFFBOARD")
+            {
+                local_pos_pub.publish(pose);
+                flag = false ;
+            }
+            */
+        //local_pos_pub.publish(pose);
         ros::spinOnce();
         rate.sleep();
     }
