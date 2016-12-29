@@ -106,9 +106,9 @@ void localPoseCallback(const geometry_msgs :: PoseStamped :: ConstPtr& msg)
   action_z = proportional_z + integral_z + derivative_z;
   action_w = 10 * proportional_w + integral_w + derivative_w;
 
-  twist.twist.linear.x = action_x;
-  twist.twist.linear.y = action_y;
-  twist.twist.linear.z = action_z;
+  twist.twist.linear.x = 0.1* action_x;
+  twist.twist.linear.y = 0.1*action_y;
+  twist.twist.linear.z = 0.01*action_z;
   twist.twist.angular.z = action_w;
   ROS_INFO("Error X: %0.2f \n", error_x);
   ROS_INFO("Error Y: %0.2f \n", error_y);

@@ -40,8 +40,8 @@ int main(int argc, char **argv)
 
     geometry_msgs::PoseStamped pose;
     pose.pose.position.x = 0;
-    pose.pose.position.y = 24;
-    pose.pose.position.z = 5;
+    pose.pose.position.y = 0;
+    pose.pose.position.z = 7;
 
     //send a few setpoints before starting
     for(int i = 100; ros::ok() && i > 0; --i){
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
                 last_request = ros::Time::now();
             }
         }
-    /*    if (flag == true && current_state.mode != "OFFBOARD")
+        if (flag == true && current_state.mode != "OFFBOARD")
         {
             local_pos_pub.publish(pose);
         }
@@ -85,8 +85,8 @@ int main(int argc, char **argv)
                 local_pos_pub.publish(pose);
                 flag = false ;
             }
-            */
-        //local_pos_pub.publish(pose);
+            
+        local_pos_pub.publish(pose);
         ros::spinOnce();
         rate.sleep();
     }
