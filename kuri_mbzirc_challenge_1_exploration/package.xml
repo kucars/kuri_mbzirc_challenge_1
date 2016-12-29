@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>kuri_mbzirc_challenge_1_exploration</name>
+  <version>0.0.0</version>
+  <description>The kuri_mbzirc_challenge_1_exploration package</description>
+
+  <maintainer email="reem.ashour@kustar.ac.ae">Reem Ashour</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+
+
+
+  <export>
+  </export>
+</package>

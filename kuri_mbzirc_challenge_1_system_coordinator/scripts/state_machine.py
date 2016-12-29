@@ -37,8 +37,8 @@ class target_detection(smach.State):
         else:
         	return 'targetDetected'
             
-# define state : marker_detection
-class marker_detection(smach.State):
+# define state : marker_tracking
+class marker_tracking(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['visible','notVisible'])
 	self.counter=0
@@ -98,7 +98,7 @@ class Challenge1():
                                 transitions={'detectingTarget':'TARGET_DETECTION',
                                              'targetDetected':'MARKER_DETECTION'})
 
-		smach.StateMachine.add('MARKER_DETECTION', marker_detection(),
+		smach.StateMachine.add('MARKER_TRACKING', marker_tracking(),
                                 transitions={'visible':'TRAJECTORY_FOLLOWING',
                                              'notVisible':'EXPLORATION'})
 

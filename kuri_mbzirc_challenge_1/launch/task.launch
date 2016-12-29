@@ -27,6 +27,7 @@
 
     <arg name="pluginlists_yaml" default="$(find mavros)/launch/px4_pluginlists.yaml" />
     <arg name="config_yaml" default="$(find mavros)/launch/px4_config.yaml" />
+    <arg name="enable_truck_motion" default="false"/>
 
     <!-- running gazebo + spawning iris robot --> 
     <include file="$(find px4)/launch/posix_sitl.launch">
@@ -68,7 +69,9 @@
       <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
     <!-- running truck --> 
-    <include file="$(find kuri_mbzirc_challenge_1)/launch/truck.launch"></include>
+    <include file="$(find kuri_mbzirc_challenge_1)/launch/truck.launch">
+    <arg name="enable_truck_motion" value="$(arg enable_truck_motion)"/>
+</include>
 
 
 
