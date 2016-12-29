@@ -4,12 +4,13 @@
   <arg name="debug" default="false"/>
   <arg name="gui" default="true"  />
   <arg name="headless" default="false"/>
+  <arg name="enable_truck_motion" default="true"/>
 
-  <param name="truck/robot_description" command="$(find xacro)/xacro '$(find kuri_mbzirc_sim)/urdf/truck_panel.urdf.xacro'" />
+  <param name="truck/robot_description" command="$(find xacro)/xacro '$(find kuri_mbzirc_sim)/urdf/truck_panel.urdf.xacro' enable_motion:=$(arg enable_truck_motion)" />
 
   <group ns="truck/ground_truth">
     <node name="spawn_robot" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-          args=" -urdf -model truck -param /truck/robot_description" />
+          args=" -urdf -model truck -param /truck/robot_description -x 0 -y 20" />
 
     
   <!--  <node pkg="fake_localization" type="fake_localization" name="fake_localization" output="screen" >

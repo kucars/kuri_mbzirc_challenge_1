@@ -30,6 +30,8 @@ from math import *
 from mavros.utils import *
 from mavros import setpoint as SP
 from tf.transformations import quaternion_from_euler
+from std_msgs.msg import String
+from geometry_msgs.msg import PoseStamped
 
 class SetpointPosition:
     """
@@ -39,11 +41,12 @@ class SetpointPosition:
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
-        self.currentPoseX = 0 
+        self.currentPoseX = 24 
         self.currentPoseY = 0
         self.currentPoseZ = 0
         # publisher for mavros/setpoint_position/local
-        self.pub = SP.get_pub_position_local(queue_size=10)
+        #self.pub = SP.get_pub_position_local(queue_size=10)
+        self.pub = rospy.Publisher('/kuri_offboard_attitude_control_test/goal', PoseStamped, queue_size=10)
         # subscriber for mavros/local_position/local
         self.sub = rospy.Subscriber(mavros.get_topic('local_position', 'pose'),
                                     SP.PoseStamped, self.reached)
@@ -77,7 +80,7 @@ class SetpointPosition:
             quaternion = quaternion_from_euler(0, 0, yaw)
             msg.pose.orientation = SP.Quaternion(*quaternion)
 
-            self.pub.publish(msg)
+            #self.pub.publish(msg)
             rate.sleep()
 
     def set(self, x, y, z, delay=0, wait=True):
@@ -112,7 +115,7 @@ class SetpointPosition:
 def setpoint_demo():
     rospy.init_node('setpoint_position_demo')
     #mavros.set_namespace()  # initialize mavros module with default namespace
-    mavros.set_namespace('/ardrone/mavros')    
+    mavros.set_namespace('/mavros')    
     rate = rospy.Rate(10)
 
     setpoint = SetpointPosition()
@@ -129,15 +132,8 @@ def setpoint_demo():
     setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 20.0, 5)
 
     rospy.loginfo("Sink")
-    setpoint.set(0.0, 0.0, 20.0, 5)
+    setpoint.set(0.0, 20.0, 20.0, 5)
 
-    # Simulate a slow landing.
-    setpoint.set(0.0, 0.0,  18.0, 5)
-    setpoint.set(0.0, 0.0,  15.0, 5)
-    setpoint.set(0.0, 0.0,  10.0, 2)
-    setpoint.set(0.0, 0.0,  8.0,  5)
-    setpoint.set(0.0, 0.0,  5.0,  5)
-    setpoint.set(0.0, 0.0, -0.2,  5)
 
     rospy.loginfo("Bye!")
 
