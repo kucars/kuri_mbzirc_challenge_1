@@ -1,0 +1,7 @@
+visptracker:
+  cam_resolution_x: 640
+  cam_resolution_y: 480
+  tracker_type: 1
+  cam_topic: '/ardrone/downward_cam/camera/image'
+  pub_topic: 'visptracker_data'
+

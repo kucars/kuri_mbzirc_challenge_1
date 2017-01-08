@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="paused"              default="false"/>
+  <arg name="debug"               default="false"/>
+  <arg name="gui"                 default="true" />
+  <arg name="headless"            default="false"/>
+  <arg name="enable_logging"      default="false"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="ns"                  default="ardrone"/>
+  <arg name="log_file"            default="$(arg ns)"/>
+  
+  <arg name="goto" default="true" />
+  
+  <include file="$(find usb_cam)/launch/usb_cam-test.launch">
+  </include>
+
+  <group if="$(arg goto)" >
+    <rosparam command="load" file="$(find kuri_mbzirc_challenge_1)/config/visptracker-params.yaml" />
+    <node pkg="kuri_mbzirc_challenge_1" type="visp-tracker" name="visptracker" />
+  </group>
+
+</launch>
