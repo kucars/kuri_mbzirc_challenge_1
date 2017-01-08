@@ -38,6 +38,9 @@ class SetpointPosition:
     This class sends position targets to FCU's position controller
     """
     def __init__(self):
+        self.startMissionFlag = False
+        self.reachedCenter = False
+        self.msg2 = 'reachedCenter'
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
@@ -45,11 +48,13 @@ class SetpointPosition:
         self.currentPoseY = 0
         self.currentPoseZ = 0
         # publisher for mavros/setpoint_position/local
-        #self.pub = SP.get_pub_position_local(queue_size=10)
-        self.pub = rospy.Publisher('/kuri_offboard_attitude_control_test/goal', PoseStamped, queue_size=10)
+        self.pub = SP.get_pub_position_local(queue_size=10)
+        #self.pub = rospy.Publisher('/kuri_offboard_attitude_control_test/goal', PoseStamped, queue_size=10)
         # subscriber for mavros/local_position/local
         self.sub = rospy.Subscriber(mavros.get_topic('local_position', 'pose'),
                                     SP.PoseStamped, self.reached)
+        self.submission = rospy.Subscriber('/startMission', String, self.startMission)
+        self.pub2 = rospy.Publisher('/rechedCenter' , String, queue_size=10)
 
         try:
             thread.start_new_thread(self.navigate, ())
@@ -63,6 +68,7 @@ class SetpointPosition:
     def navigate(self):
         rate = rospy.Rate(10)   # 10hz
 
+        rate.sleep()
         msg = SP.PoseStamped(
             header=SP.Header(
                 frame_id="base_footprint",  # no matter, plugin don't use TF
@@ -79,9 +85,9 @@ class SetpointPosition:
             yaw = radians(yaw_degrees)
             quaternion = quaternion_from_euler(0, 0, yaw)
             msg.pose.orientation = SP.Quaternion(*quaternion)
-
-            #self.pub.publish(msg)
-            rate.sleep()
+            if (self.startMissionFlag == True and self.reachedCenter == False): 
+                self.pub.publish(msg)
+                rate.sleep()
 
     def set(self, x, y, z, delay=0, wait=True):
         self.done = False
@@ -93,14 +99,17 @@ class SetpointPosition:
             rate = rospy.Rate(5)
             while not self.done and not rospy.is_shutdown():
                 rate.sleep()
-
         time.sleep(delay)
 
     def reached(self, topic):
+        if (topic.pose.position.x <=0.1 and topic.pose.position.x >=-0.1 and topic.pose.position.y >=-0.1 and topic.pose.position.y <=0.1 ):
+            self.pub2.publish(self.msg2)
+            # this should be true inorder to stop sending data ... we will keep it until we find another solution 
+            self.reachedCenter = False
         def is_near(msg, x, y):
             rospy.logdebug("Position %s: local: %d, target: %d, abs diff: %d",
                            msg, x, y, abs(x - y))
-            return abs(x - y) < 0.5
+            return abs(x - y) < 0.1
         self.currentPoseX = topic.pose.position.x 
         self.currentPoseY = topic.pose.position.y
         self.currentPoseZ = topic.pose.position.z
@@ -111,7 +120,13 @@ class SetpointPosition:
             self.done = True
             self.done_evt.set()
 
+    
 
+    def startMission(self, topic):
+            if (topic.data == 'start'):
+                self.startMissionFlag = True 
+            
+            
 def setpoint_demo():
     rospy.init_node('setpoint_position_demo')
     #mavros.set_namespace()  # initialize mavros module with default namespace
@@ -124,15 +139,23 @@ def setpoint_demo():
     
     print setpoint.x, setpoint.y
     rospy.loginfo("Climb")
-    setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 5.0,  2)
-    setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 8.0,  5)
-    setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 10.0, 5)
-    setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 15.0, 5)
-    setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 18.0, 5)
-    setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 20.0, 5)
-
-    rospy.loginfo("Sink")
-    setpoint.set(0.0, 20.0, 20.0, 5)
+    setpoint.set(setpoint.currentPoseX, 25 , 5.0,  2)
+    rospy.loginfo("1")
+    setpoint.set(setpoint.currentPoseX, 20 , 8.0,  5)
+    rospy.loginfo("2")
+    setpoint.set(setpoint.currentPoseX, 15 , 10.0, 5)
+    rospy.loginfo("3")
+    setpoint.set(setpoint.currentPoseX, 10 , 15.0, 5)
+    rospy.loginfo("4")
+    setpoint.set(setpoint.currentPoseX, 5.0, 18.0, 5)
+    rospy.loginfo("5")
+    setpoint.set(setpoint.currentPoseX, 0.0, 20.0, 5)
+    rospy.loginfo("6")    
+    setpoint.set(0.0, 0.0, 20.0, 5)
+    # this will be changed when I find a solution for the hold state 
+    while(True):
+        rospy.loginfo("7")
+        setpoint.set(setpoint.currentPoseX, setpoint.currentPoseY, 20.0, 5)
 
 
     rospy.loginfo("Bye!")

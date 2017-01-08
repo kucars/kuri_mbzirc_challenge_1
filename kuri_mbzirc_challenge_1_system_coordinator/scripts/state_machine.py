@@ -5,19 +5,42 @@ import rospy
 import smach
 import smach_ros
 import time
+from std_msgs.msg import String
+
+'''
+# define state : exploration
+class Initilization(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['start'])
+        self.startMission_pub = rospy.Publisher('/startMission' , String, queue_size=10)
+	self.moveNext = False 
+
+    def execute(self, userdata):
+	msg = 'start' 
+	self.startMission_pub.publish(msg) 
+	return 'start'
+'''       
 
 
 # define state : exploration
 class exploration(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['move_to_waypoint' , 'hovering'])
+        self.reachedCenter_sub = rospy.Subscriber('/rechedCenter', String, self.reachedCenter)
+        self.startMission_pub = rospy.Publisher('/startMission' , String, queue_size=10)
         self.exploration_time=0
-       
+	self.moveNext = False 
+
+    def reachedCenter(self , topic):
+	if topic.data == 'reachedCenter':
+		self.moveNext = True
+ 
     def execute(self, userdata):
+	msg = 'start' 
+	self.startMission_pub.publish(msg) 
         rospy.loginfo('Executing state EXPLORATION')
 	time.sleep(1)
-	if self.exploration_time<3:
-        	self.exploration_time+=1
+	if self.moveNext == False:
                 return 'move_to_waypoint'
         else:
         	return 'hovering'
@@ -90,13 +113,16 @@ class Challenge1():
 	sm = smach.StateMachine(outcomes=['Done'])
 	with sm: 
 		# add states to the container 
+		#smach.StateMachine.add('INIT', Initilization(),
+                 #               transitions={'start':'EXPLORATION'})
+
 		smach.StateMachine.add('EXPLORATION', exploration(),
                                 transitions={'move_to_waypoint':'EXPLORATION',
                                              'hovering':'TARGET_DETECTION'})
 
 		smach.StateMachine.add('TARGET_DETECTION', target_detection(),
                                 transitions={'detectingTarget':'TARGET_DETECTION',
-                                             'targetDetected':'MARKER_DETECTION'})
+                                             'targetDetected':'MARKER_TRACKING'})
 
 		smach.StateMachine.add('MARKER_TRACKING', marker_tracking(),
                                 transitions={'visible':'TRAJECTORY_FOLLOWING',
@@ -104,7 +130,7 @@ class Challenge1():
 
 		smach.StateMachine.add('TRAJECTORY_FOLLOWING', trajectory_following(),
                                 transitions={'reached':'DOCKING',
-                                             'following':'MARKER_DETECTION'})
+                                             'following':'MARKER_TRACKING'})
 
 		smach.StateMachine.add('DOCKING', docking(),
                                 transitions={'docking':'DOCKING',
