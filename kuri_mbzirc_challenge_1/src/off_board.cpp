@@ -37,6 +37,10 @@ int main(int argc, char **argv)
         rate.sleep();
     }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2cf3cf0b93791dc744847808b6895bc19a8fe636
     mavros_msgs::SetMode offb_set_mode;
     offb_set_mode.request.custom_mode = "OFFBOARD";
 
@@ -46,19 +50,34 @@ int main(int argc, char **argv)
     ros::Time last_request = ros::Time::now();
 
     while(ros::ok()){
+<<<<<<< HEAD
         std::cout << "current_state.mode " << current_state.mode << "Time Diff" << ros::Time::now() - last_request << std::endl ;
         if(current_state.mode != "OFFBOARD" &&  (ros::Time::now() - last_request > ros::Duration(5.0))){
                 std::cout << "not OFFboard"  << std::endl ;
                 if( set_mode_client.call(offb_set_mode) && offb_set_mode.response.success){
+=======
+        if( current_state.mode != "OFFBOARD" &&
+            (ros::Time::now() - last_request > ros::Duration(1.0))){
+            if( set_mode_client.call(offb_set_mode) &&
+                offb_set_mode.response.success){
+>>>>>>> 2cf3cf0b93791dc744847808b6895bc19a8fe636
                 ROS_INFO("Offboard enabled");
                 }
             last_request = ros::Time::now();
+<<<<<<< HEAD
         }
         else {
             std::cout << "IN ELSE    " << std::endl ;
             if( !current_state.armed  && (ros::Time::now() - last_request > ros::Duration(5.0))){
                 std::cout << "Not Armed" << std::endl ;
                 if( arming_client.call(arm_cmd) && arm_cmd.response.success){
+=======
+        } else {
+            if( !current_state.armed &&
+                (ros::Time::now() - last_request > ros::Duration(1.0))){
+                if( arming_client.call(arm_cmd) &&
+                    arm_cmd.response.success){
+>>>>>>> 2cf3cf0b93791dc744847808b6895bc19a8fe636
                     ROS_INFO("Vehicle armed");
                 }
                 last_request = ros::Time::now();

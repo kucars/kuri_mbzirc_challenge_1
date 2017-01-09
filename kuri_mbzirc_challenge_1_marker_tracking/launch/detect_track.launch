@@ -38,7 +38,7 @@
 	</node>
 	<node pkg="nodelet" type="nodelet" name="framerate_nodelet" args="load ueye/FramerateNodelet ueye_manager"/>
 
-	<node name="marker_detection" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="marker_detection.py" /> <!--output="screen"-->
+	<node name="marker_detection_iDScam" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="marker_detection_iDScam.py" /> <!--output="screen"-->
 
 	<node pkg="cftld_ros" type="cftld_ros_node" name="cftld_ros" output="screen" respawn="true">
     <remap from="image_raw" to="/downward_cam/camera/image" />

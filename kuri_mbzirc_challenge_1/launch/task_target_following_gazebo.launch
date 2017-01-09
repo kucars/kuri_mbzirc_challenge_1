@@ -17,7 +17,7 @@
     <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
 
     <arg name="headless" default="false"/>
-    <arg name="gui" default="true"/>
+    <arg name="gui" default="false"/>
     <arg name="ns" default="/"/>      
     <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
 
@@ -73,10 +73,12 @@
     <arg name="enable_truck_motion" value="$(arg enable_truck_motion)"/>
 		</include>
 
+		<node name="offb_follow_target" pkg="kuri_mbzirc_challenge_1" type="offb_follow_target" output="screen"/>
+
+		<include file="$(find kuri_mbzirc_challenge_1_marker_tracking)/launch/detect_track_gazebo.launch"/>
+
+		<node name="target_position" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="target_position.py" output="screen"/>
 
 
 </launch>
-
-
-
 
