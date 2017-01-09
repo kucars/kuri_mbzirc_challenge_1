@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+#  Authors: Husameldin Mukhtar
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+# Updated: Husameldin Mukhtar : husameldin.mukhtar@kustar.ac.ae
+
 import roslib
 #roslib.load_manifest('my_package')
 import sys
@@ -27,16 +44,9 @@ home = expanduser("~")
 
 #from __future__ import print_function
 
-"""
 # iDS Camera
 cam_W=2456
 cam_H=2054
-cam_f=25e-3
-pxl_size=3.45e-6
-"""
-
-cam_W=640
-cam_H=480
 cam_f=25e-3
 pxl_size=3.45e-6
 
@@ -45,7 +55,7 @@ pxl_size=3.45e-6
 #trgt_circle_r=0.1/2
 
 trgt_W=1.5
-trgt_circle_r=1/2  
+trgt_circle_r=1/float(2)  
 
 terminate = False 
 
@@ -168,7 +178,9 @@ class marker_detection:
 						circle_x = circle[0][0]
 						circle_y = circle[0][1]
 						circle_r = circle[0][2]
-						trgt_Z2 = cam_f*trgt_circle_r/(float(circle_r)*pxl_size*ratio_act)
+						#trgt_Z2 = cam_f*trgt_circle_r/(float(circle_r)*pxl_size*ratio_act)
+						#trgt_Z2 = (cam_f/(float(pxl_size)*ratio_act))*(trgt_circle_r/float(circle_r))
+						trgt_Z2 = fx*(trgt_circle_r/float(circle_r))
 
 						M = cv2.moments(c)
 						cX = int((M["m10"] / M["m00"]))
