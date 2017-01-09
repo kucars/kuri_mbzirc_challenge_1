@@ -2,49 +2,34 @@
 
 import roslib; 
 import rospy
+import actionlib
 import smach
 import smach_ros
 import time
 from std_msgs.msg import String
+from kuri_mbzirc_challenge_1_msgs.msg import explorationAction
+import kuri_mbzirc_challenge_1_msgs.msg
 
-'''
-# define state : exploration
-class Initilization(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['start'])
-        self.startMission_pub = rospy.Publisher('/startMission' , String, queue_size=10)
-	self.moveNext = False 
 
-    def execute(self, userdata):
-	msg = 'start' 
-	self.startMission_pub.publish(msg) 
-	return 'start'
-'''       
+
 
 
 # define state : exploration
 class exploration(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['move_to_waypoint' , 'hovering'])
-        self.reachedCenter_sub = rospy.Subscriber('/rechedCenter', String, self.reachedCenter)
-        self.startMission_pub = rospy.Publisher('/startMission' , String, queue_size=1)
-        self.exploration_time=0
-	self.moveNext = False 
 
-    def reachedCenter(self , topic):
-	if topic.data == 'reachedCenter':
-		self.moveNext = True
- 
+
     def execute(self, userdata):
-        rospy.loginfo('Executing state EXPLORATION')
-	msg = 'start' 
-	self.startMission_pub.publish(msg) 
-	time.sleep(1)
-	if self.moveNext == False:
-                return 'move_to_waypoint'
-        else:
-        	return 'hovering'
-	
+    	client = actionlib.SimpleActionClient('exploration', explorationAction)
+        client.wait_for_server()
+        goal_ex = kuri_mbzirc_challenge_1_msgs.msg.explorationGoal()
+        # Fill in the goal here
+        goal_ex.startMission_str = 'startMission'
+        client.send_goal(goal_ex)
+        r = client.wait_for_result()
+        if r == True:
+            return 'hovering'
        
 # define state : target detection 
 class target_detection(smach.State):
@@ -69,14 +54,6 @@ class target_detection(smach.State):
 		return 'detectingTarget'
 	else:
         	return 'targetDetected'
-
-	'''	
-        if self.counter<3:
-                self.counter+=1
-		return 'detectingTarget'
-        else:
-        	return 'targetDetected'
-        '''
 
     
 # define state : marker_tracking
@@ -106,14 +83,6 @@ class marker_tracking(smach.State):
 	
 
 
-	'''
-        if self.counter <3 :
-                self.counter+=1
-                return 'notVisible'
-        else: 
-        	return 'visible'
-	'''
-
 
 # define state : marker_detection
 class trajectory_following(smach.State):
@@ -139,13 +108,6 @@ class trajectory_following(smach.State):
         	return 'following'
         else: 
         	return 'reached'
-	'''        
-	if self.counter <3 :
-                self.counter+=1
-                return 'following'
-        else: 
-        	return 'reached'
-	'''
 
 # define state : marker_detection
 class docking(smach.State):
@@ -171,21 +133,12 @@ class docking(smach.State):
         else: 
         	return 'docked'
 
-	'''
-        if self.counter <3 :
-                self.counter+=1
-                return 'docking'
-        else: 
-        	return 'docked'
-	'''
-
-
 # main
 class Challenge1():
-	
 	rospy.init_node('MBZIRC_ch1_state_machine')
-        # Create a SMACH state machine
+ 	# Create a SMACH state machine
 	sm = smach.StateMachine(outcomes=['Done'])
+
 	with sm: 
 		# add states to the container 
 		#smach.StateMachine.add('INIT', Initilization(),

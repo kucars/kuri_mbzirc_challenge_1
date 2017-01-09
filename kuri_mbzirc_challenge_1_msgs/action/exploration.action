@@ -1,0 +1,8 @@
+# Define the goal
+string startMission_str
+---
+# Define the result
+bool reachedCenter
+---
+# Define a feedback message
+
