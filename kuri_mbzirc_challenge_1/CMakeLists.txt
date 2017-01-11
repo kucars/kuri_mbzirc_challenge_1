@@ -24,8 +24,8 @@ install(DIRECTORY launch urdf config
 add_executable(off_board src/off_board.cpp)
 target_link_libraries(off_board ${catkin_LIBRARIES})
 
-add_executable(offb_follow_target src/offb_follow_target.cpp)
-target_link_libraries(offb_follow_target ${catkin_LIBRARIES})
+#add_executable(offb_follow_target src/offb_follow_target.cpp)
+#target_link_libraries(offb_follow_target ${catkin_LIBRARIES})
 
 
 #############

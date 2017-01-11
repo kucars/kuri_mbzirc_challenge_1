@@ -14,6 +14,7 @@ mavros_msgs::State current_state;
 void state_cb(const mavros_msgs::State::ConstPtr& msg){
     current_state = *msg;
 }
+geometry_msgs::PoseStamped set_pos;
 
 int main(int argc, char **argv)
 {
@@ -27,6 +28,7 @@ int main(int argc, char **argv)
             ("mavros/cmd/arming");
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>
             ("mavros/set_mode");
+    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10);
 
     //the setpoint publishing rate MUST be faster than 2Hz
     ros::Rate rate(20.0);
@@ -37,6 +39,16 @@ int main(int argc, char **argv)
         rate.sleep();
     }
 
+    set_pos.pose.position.x = 0;
+    set_pos.pose.position.y = 0;
+    set_pos.pose.position.z = 10;
+
+    //send a few setpoints before starting
+    for(int i = 100; ros::ok() && i > 0; --i){
+        local_pos_pub.publish(set_pos);
+        ros::spinOnce();
+        rate.sleep();
+    }
 
     mavros_msgs::SetMode offb_set_mode;
     offb_set_mode.request.custom_mode = "OFFBOARD";
@@ -68,6 +80,7 @@ int main(int argc, char **argv)
 
 
         }
+        local_pos_pub.publish(set_pos);
 
         ros::spinOnce();
         rate.sleep();

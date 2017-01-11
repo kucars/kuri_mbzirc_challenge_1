@@ -10,7 +10,7 @@
 
   <group ns="truck/ground_truth">
     <node name="spawn_robot" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-          args=" -urdf -model truck -param /truck/robot_description" />
+          args=" -urdf -model truck -param /truck/robot_description -x 0 -y 0" />
 
     
   <!--  <node pkg="fake_localization" type="fake_localization" name="fake_localization" output="screen" >

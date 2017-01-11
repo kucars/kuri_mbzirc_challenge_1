@@ -7,11 +7,15 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   geometry_msgs
+  actionlib_msgs
+  kuri_mbzirc_challenge_1_msgs
+
 )
 
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
+
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -25,7 +29,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES kuri_mbzirc_challenge_1_exploration
-#  CATKIN_DEPENDS roscpp rospy
+  CATKIN_DEPENDS roscpp rospy  actionlib_msgs
+
 #  DEPENDS system_lib
 )
 
