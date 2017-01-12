@@ -4,15 +4,14 @@ project(kuri_mbzirc_challenge_1_msgs)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
     roscpp
+    rospy
     actionlib_msgs
     std_msgs
-    geometry_msgs  genmsg  actionlib
+    geometry_msgs
+    genmsg
+    actionlib
+    message_generation
 )
-
-
-
-
-
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -23,19 +22,26 @@ add_action_files(
    DIRECTORY action
    FILES
    exploration.action
+   poseEstimation.action
 
  )
  
-generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+add_message_files(
+   DIRECTORY msg
+   FILES
+   PoseEsti.msg
+
 )
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#  DEPENDENCIES
-#   std_msgs
-#   geometry_msgs
-#   actionlib_msgs # Or other packages containing msgs
-#)
+
+generate_messages(
+  DEPENDENCIES
+  actionlib_msgs
+  std_msgs
+  geometry_msgs
+  # Or other packages containing msgs
+)
+
+
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -48,7 +54,7 @@ generate_messages(
 ###################################
 
 catkin_package(
-  CATKIN_DEPENDS actionlib_msgs
+  CATKIN_DEPENDS actionlib_msgs geometry_msgs std_msgs
 )
 
 ###########
