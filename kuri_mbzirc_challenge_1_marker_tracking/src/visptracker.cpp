@@ -89,7 +89,7 @@ int main(int argc, char ** argv)
   detectorTracker->setSampling(2, 2);
   detectorTracker->setLambda(0.001);
   detectorTracker->setIterationMax(200);
-  detectorTracker->setPyramidal(4, 1);
+  detectorTracker->setPyramidal(4, 4);
 
   detectorTracker->enableTrackerDisplay(true);
   
