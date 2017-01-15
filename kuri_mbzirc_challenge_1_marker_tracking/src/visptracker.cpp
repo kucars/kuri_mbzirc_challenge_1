@@ -83,13 +83,13 @@ int main(int argc, char ** argv)
   
   detectorTracker = new TrackLandingMark(camSizeX, camSizeY, (TrackerType)trackerType);
   
-  ros::Subscriber sub = n.subscribe(camTopic, 100, imageCallback);
+  ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
   trackerDataPub = n.advertise<kuri_mbzirc_challenge_1_marker_tracking::TrackerData>(pubTopic, 1000);
 
   detectorTracker->setSampling(2, 2);
   detectorTracker->setLambda(0.001);
   detectorTracker->setIterationMax(200);
-  detectorTracker->setPyramidal(4, 4);
+  detectorTracker->setPyramidal(6, 6);
 
   detectorTracker->enableTrackerDisplay(true);
   
