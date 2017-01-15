@@ -1,6 +1,8 @@
 # KURI MBZIRC Challenge 1
 Challenge 1 related tasks implementation
 
+[![Build Status](https://travis-ci.org/kuri-kustar/kuri_mbzirc_challenge_1.svg?branch=master)](https://travis-ci.org/kuri-kustar/kuri_mbzirc_challenge_1)
+
 In order run the challenge, the following Packages are needed: 
 
 - ROS   
