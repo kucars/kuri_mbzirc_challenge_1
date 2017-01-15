@@ -17,7 +17,7 @@ Assuming that ROS and mavros are already installed, use the following commands t
 cd <catkin_ws>
 $ wstool init src
 $ wstool set -t src kuri_mbzirc_challenge_1 https://github.com/kuri-kustar/kuri_mbzirc_challenge_1.git --git
-$ wstool merge -t src https://raw.githubusercontent.com/kuri-kustar/kuri_mbzirc_challenge_1/master/mbzirc_challenge1.rosinstall
+$ wstool merge -t src https://raw.githubusercontent.com/kuri-kustar/kuri_mbzirc_challenge_1/master/kuri_mbzirc_challenge_1.rosinstall
 $ wstool update -t src
 $ rosdep install -y -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 ```

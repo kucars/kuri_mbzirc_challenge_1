@@ -14,7 +14,15 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-find_package(OpenCV 2.4.8 REQUIRED)
+# Few differences when dealing with ros-indigo and ros-kinetic
+set( ROS_DISTRO $ENV{ROS_DISTRO} )
+if( ${ROS_DISTRO} STREQUAL "indigo" )
+    find_package(OpenCV 2.4.8 REQUIRED)
+elseif(${ROS_DISTRO} STREQUAL "kinetic")
+    find_package(OpenCV REQUIRED)
+else()
+    message("Unsupported ROS Distro")
+endif()
 
 ################################################
 ## Declare ROS messages, services and actions ##
