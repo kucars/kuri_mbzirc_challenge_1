@@ -52,14 +52,12 @@ target_link_libraries(off_board ${catkin_LIBRARIES})
 #target_link_libraries(offb_follow_target ${catkin_LIBRARIES})
 
 add_executable(poseEstimationServer src/positionEstimationServer.cpp)
-add_dependencies(poseEstimationServer ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
+#add_dependencies(poseEstimationServer ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
 target_link_libraries(poseEstimationServer ${catkin_LIBRARIES})
 
 add_executable(poseEstClient src/positionEstimationClient.cpp)
-add_dependencies(poseEstClient ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
+#add_dependencies(poseEstClient ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
 target_link_libraries(poseEstClient ${catkin_LIBRARIES})
-
-
 
 #############
 ## Testing ##
