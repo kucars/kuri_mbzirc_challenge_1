@@ -11,6 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
     genmsg
     actionlib
     message_generation
+    kuri_msgs
+    sensor_msgs
+
 )
 
 ################################################
@@ -18,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 ################################################
 
 ## Generate actions in the 'action' folder
+
 add_action_files(
    DIRECTORY action
    FILES
@@ -33,14 +37,24 @@ add_message_files(
 
 )
 
+
+add_service_files(
+  DIRECTORY srv
+  FILES
+  PES.srv
+)
+
 generate_messages(
   DEPENDENCIES
   actionlib_msgs
   std_msgs
   geometry_msgs
+  kuri_msgs
+  sensor_msgs
   # Or other packages containing msgs
 )
 
+find_package(kuri_msgs REQUIRED)
 
 
 ################################################

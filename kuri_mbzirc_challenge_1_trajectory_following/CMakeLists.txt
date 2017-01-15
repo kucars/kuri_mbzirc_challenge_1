@@ -68,9 +68,9 @@ target_link_libraries(attitude_control ${catkin_LIBRARIES})
 
 
 
-add_executable(poseEstimatation src/PositionEstimationServer.cpp src/PositionEstimation.cpp  include/PositionEstimation.h)
-target_link_libraries(poseEstimatation ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
-add_dependencies(poseEstimatation ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
+#add_executable(poseEstimatation src/PositionEstimationServer.cpp src/PositionEstimation.cpp  include/PositionEstimation.h)
+#target_link_libraries(poseEstimatation ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
+#add_dependencies(poseEstimatation ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
 
 #############
 ## Testing ##

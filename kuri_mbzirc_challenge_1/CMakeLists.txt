@@ -2,8 +2,24 @@ cmake_minimum_required(VERSION 2.8.3)
 project(kuri_mbzirc_challenge_1)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package(catkin REQUIRED COMPONENTS
+    roscpp
+    rospy
+    std_msgs
+    geometry_msgs
+    genmsg
+    message_generation
+    kuri_msgs
+    cv_bridge
+    sensor_msgs
+    image_transport
+    cmake_modules
+    tf message_filters
+    nav_msgs
+    kuri_mbzirc_challenge_1_msgs
+    )
 
+find_package(kuri_msgs   REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -12,8 +28,16 @@ catkin_package(
     CATKIN_DEPENDS
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+find_package(Eigen REQUIRED)
+find_package(PCL REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(kuri_mbzirc_challenge_1_msgs REQUIRED)
 
+include_directories( include
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS})
 #############
 ## Install ##
 #############
@@ -26,6 +50,15 @@ target_link_libraries(off_board ${catkin_LIBRARIES})
 
 #add_executable(offb_follow_target src/offb_follow_target.cpp)
 #target_link_libraries(offb_follow_target ${catkin_LIBRARIES})
+
+add_executable(poseEstimationServer src/positionEstimationServer.cpp)
+add_dependencies(poseEstimationServer ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
+target_link_libraries(poseEstimationServer ${catkin_LIBRARIES})
+
+add_executable(poseEstClient src/positionEstimationClient.cpp)
+add_dependencies(poseEstClient ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
+target_link_libraries(poseEstClient ${catkin_LIBRARIES})
+
 
 
 #############
