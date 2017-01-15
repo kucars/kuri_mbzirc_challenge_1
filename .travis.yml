@@ -74,6 +74,9 @@ script:
 - source devel/setup.bash
 - rospack profile
 - catkin_make --cmake-args -DCONFIG=posix_sitl_default
+- catkin_make --cmake-args -DCONFIG=posix_sitl_default
+- catkin_make --cmake-args -DCONFIG=posix_sitl_default
+- catkin_make --cmake-args -DCONFIG=posix_sitl_default
 - cd ~/ros/kuri_catkin_ws/src/Firmware
 - source Tools/setup_gazebo.bash $(pwd) $(pwd)/build_posix_sitl_default
 - export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)
