@@ -54,9 +54,11 @@ target_link_libraries(off_board ${catkin_LIBRARIES})
 
 add_executable(server src/server_1.cpp)
 target_link_libraries(server ${catkin_LIBRARIES})
+add_dependencies(server ${kuri_mbzirc_challenge_1_EXPORTED_TARGETS})
 
 add_executable(client src/client_1.cpp)
 target_link_libraries(client ${catkin_LIBRARIES})
+add_dependencies(client ${kuri_mbzirc_challenge_1_EXPORTED_TARGETS})
 
 
 #############
