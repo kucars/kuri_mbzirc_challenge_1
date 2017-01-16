@@ -54,11 +54,9 @@ target_link_libraries(off_board ${catkin_LIBRARIES})
 
 add_executable(server src/server_1.cpp)
 target_link_libraries(server ${catkin_LIBRARIES})
-add_dependencies(server ${catkin_LIBRARIES})
 
 add_executable(client src/client_1.cpp)
 target_link_libraries(client ${catkin_LIBRARIES})
-add_dependencies(client ${catkin_LIBRARIES})
 
 
 #############
