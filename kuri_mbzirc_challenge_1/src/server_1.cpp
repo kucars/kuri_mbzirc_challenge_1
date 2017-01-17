@@ -52,6 +52,12 @@
 #include <iostream>
 
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 08b0f30220f143d343bbb347ef70c44d4c99dc0a
 #include "kuri_mbzirc_challenge_1_msgs/PES.h"
 #include <kuri_msgs/Object.h>
 tf::Pose tfpose;

@@ -58,10 +58,16 @@ add_dependencies(server ${catkin_EXPORTED_TARGETS})
 
 add_executable(client src/client_1.cpp)
 target_link_libraries(client ${catkin_LIBRARIES})
+<<<<<<< HEAD
 add_dependencies(client  ${catkin_EXPORTED_TARGETS})
 
 
 
+=======
+add_dependencies(client ${catkin_EXPORTED_TARGETS})
+
+
+>>>>>>> 08b0f30220f143d343bbb347ef70c44d4c99dc0a
 #############
 ## Testing ##
 #############
