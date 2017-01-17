@@ -25,7 +25,7 @@ find_package(kuri_msgs   REQUIRED)
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-    CATKIN_DEPENDS
+    CATKIN_DEPENDS message_runtime message_generation
 )
 
 find_package(Eigen REQUIRED)
