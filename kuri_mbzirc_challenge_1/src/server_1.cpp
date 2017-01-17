@@ -52,9 +52,6 @@
 #include <iostream>
 
 
-
-
-#include "kuri_mbzirc_challenge_1_msgs/PoseEsti.h"
 #include "kuri_mbzirc_challenge_1_msgs/PES.h"
 #include <kuri_msgs/Object.h>
 tf::Pose tfpose;
