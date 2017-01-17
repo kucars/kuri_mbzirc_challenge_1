@@ -3,7 +3,7 @@
 
     <!-- MAVROS posix SITL environment launch script -->
     <arg name="x" default="0"/>
-    <arg name="y" default="5"/>
+    <arg name="y" default="24"/>
     <arg name="z" default="0.066982"/>
     <arg name="R" default="0"/>
     <arg name="P" default="-0.008468"/>

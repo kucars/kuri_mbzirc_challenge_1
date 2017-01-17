@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
     //send a few setpoints before starting
     for(int i = 100; ros::ok() && i > 0; --i){
-        local_pos_pub.publish(set_pos);
+      //  local_pos_pub.publish(set_pos);
         ros::spinOnce();
         rate.sleep();
     }
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
 
         }
-        local_pos_pub.publish(set_pos);
+       // local_pos_pub.publish(set_pos);
 
         ros::spinOnce();
         rate.sleep();

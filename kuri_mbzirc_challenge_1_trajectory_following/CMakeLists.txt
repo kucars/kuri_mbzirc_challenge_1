@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   kuri_mbzirc_challenge_1_msgs
   message_generation
   actionlib_msgs
+  visp_bridge
+ 
 )
 
 
@@ -63,9 +65,12 @@ include_directories( include
 ## Install ##
 #############
 
-add_executable(attitude_control src/landingOnstaticMarker.cpp)
-target_link_libraries(attitude_control ${catkin_LIBRARIES})
+#add_executable(attitude_control src/landingOnstaticMarker.cpp)
+#target_link_libraries(attitude_control ${catkin_LIBRARIES})
 
+add_executable(attitude_control src/attitudeControlle.cpp)
+target_link_libraries(attitude_control ${catkin_LIBRARIES})
+target_link_libraries(attitude_control ${OpenCV_LIBRARIES})
 
 
 #add_executable(poseEstimatation src/PositionEstimationServer.cpp src/PositionEstimation.cpp  include/PositionEstimation.h)
