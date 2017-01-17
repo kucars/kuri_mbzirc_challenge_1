@@ -30,6 +30,8 @@ class exploration(smach.State):
         r = client.wait_for_result()
         if r == True:
             return 'hovering'
+	else: 
+	    return 'move_to_waypoint' 
        
 # define state : target detection 
 class target_detection(smach.State):
