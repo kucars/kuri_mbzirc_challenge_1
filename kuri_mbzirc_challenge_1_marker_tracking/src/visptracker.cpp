@@ -22,13 +22,19 @@
 
 #include "kuri_mbzirc_challenge_1_marker_tracking/TrackerData.h"
 
+#include <time.h>
+
 ros::Publisher trackerDataPub;
 TrackLandingMark * detectorTracker;
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
-  ROS_INFO("Image Recevied, %d %d %d", msg->header.seq, msg->width, msg->height);
+  clock_t start, end;
+  //ROS_INFO("Image Recevied, %d %d %d", msg->header.seq, msg->width, msg->height);
+  start = clock();
   detectorTracker->detectAndTrack(msg);
+  end = clock();
+  //ROS_INFO("detectorTracker took %f seconds", ((float)(end - start))/CLOCKS_PER_SEC);
   kuri_mbzirc_challenge_1_marker_tracking::TrackerData data = detectorTracker->getTrackerData();
   trackerDataPub.publish(data);
 }
@@ -86,10 +92,10 @@ int main(int argc, char ** argv)
   ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
   trackerDataPub = n.advertise<kuri_mbzirc_challenge_1_marker_tracking::TrackerData>(pubTopic, 1000);
 
-  detectorTracker->setSampling(2, 2);
+  detectorTracker->setSampling(4, 4);
   detectorTracker->setLambda(0.001);
-  detectorTracker->setIterationMax(200);
-  detectorTracker->setPyramidal(6, 6);
+  detectorTracker->setIterationMax(50);
+  detectorTracker->setPyramidal(4, 2);
 
   detectorTracker->enableTrackerDisplay(true);
   

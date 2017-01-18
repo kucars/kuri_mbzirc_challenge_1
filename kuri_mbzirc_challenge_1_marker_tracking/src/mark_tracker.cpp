@@ -14,6 +14,9 @@
 #include <visp/vpTemplateTrackerWarpHomography.h>
 #include <visp/vpTrackingException.h>
 
+#define ENABLE_TIMING_TEST 0
+#define CLOCKMSECS(s, e) ((((float)(e - s)) / CLOCKS_PER_SEC)*1000.0f)
+
 TrackLandingMark::~TrackLandingMark()
 {
   if(tracker != NULL)
@@ -76,14 +79,22 @@ TrackLandingMark::TrackLandingMark(int x, int y, TrackerType type)
 
 bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 {
+  clock_t vbStart, vbEnd, detectStart, detectEnd, initStart, initEnd;
+  clock_t trackStart, trackEnd, displayStart, displayEnd;
+
+  vbStart = clock();
   if(displayEnabled){
 	I = visp_bridge::toVispImage(*msg);
 	vpDisplay::display(I);
   }
+  vbEnd = clock();
   
+  detectStart = clock();
   if(!detectedState)
 	detectedState = detector.detect(msg);
+  detectEnd = clock();
   
+  initStart = clock();
   if(detectedState && !trackingState)
   {
 	// initialize the tracker
@@ -104,7 +115,9 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	tracker->initFromZone(I, tz);
 	trackingState = true;
   }
+  initEnd = clock();
   
+  trackStart = clock();
   if(trackingState)
   {
 	try{
@@ -139,9 +152,22 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
   }else{
 	trackerData.confidence /= 2.0f; // half the confidence level every step we don't track
   }
+  trackEnd = clock();
   
+  displayStart = clock();
   if(displayEnabled)
 	vpDisplay::flush(I);
+  displayEnd = clock();
+
+#if ENABLE_TIMING_TEST
+  double vb = CLOCKMSECS(vbStart, vbEnd);
+  double detect = CLOCKMSECS(detectStart, detectEnd);
+  double init = CLOCKMSECS(initStart, initEnd);
+  double track = CLOCKMSECS(trackStart, trackEnd);
+  double display = CLOCKMSECS(displayStart, displayEnd);
+  double sum = vb + detect + init + track + display;
+  ROS_INFO("Times: %f, %f, %f, %f, %f; Total: %f", vb, detect, init, track, display, sum);
+#endif
 }
 
 // get methods
