@@ -18,11 +18,11 @@ import kuri_mbzirc_challenge_1_msgs.msg
 class exploration(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['move_to_waypoint' , 'hovering'])
-        self.endexploration_sub = rospy.Subscriber('/endExploration', String, self.markerTracked)
-        self.startexploration_pub = rospy.Publisher('/startExploration' , String, queue_size=1)
+        self.endexploration_sub = rospy.Subscriber('/endMission', String, self.missionCallback)
+        self.startexploration_pub = rospy.Publisher('/startMission' , String, queue_size=1)
         self.tracked = False 
 
-    def markerTracked(self , topic):
+    def missionCallback(self , topic):
         print "CallBack " 
 	if topic.data == "detected":
 		self.tracked = True 
@@ -108,7 +108,7 @@ class Challenge1():
 
 		smach.StateMachine.add('TRAJECTORY_FOLLOWING', trajectory_following(),
                                 transitions={'reached':'DOCKING',
-                                             'following':'EXPLORATION'})
+                                             'following':'TRAJECTORY_FOLLOWING'})
 
 		smach.StateMachine.add('DOCKING', docking(),
                                 transitions={'docking':'DOCKING',

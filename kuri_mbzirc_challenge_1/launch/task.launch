@@ -27,7 +27,7 @@
 
     <arg name="pluginlists_yaml" default="$(find mavros)/launch/px4_pluginlists.yaml" />
     <arg name="config_yaml" default="$(find mavros)/launch/px4_config.yaml" />
-    <arg name="enable_truck_motion" default="false"/>
+    <arg name="enable_truck_motion" default="true"/>
 
     <!-- running gazebo + spawning iris robot --> 
     <include file="$(find px4)/launch/posix_sitl.launch">

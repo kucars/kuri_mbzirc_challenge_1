@@ -6,6 +6,9 @@
 #include <tf_conversions/tf_eigen.h>
 #include <tf/transform_datatypes.h>
 
+#include <message_filters/subscriber.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -14,6 +17,7 @@
 #include "geometry_msgs/PoseWithCovariance.h"
 #include "geometry_msgs/PoseStamped.h"
 #include <eigen_conversions/eigen_msg.h>
+#include <nav_msgs/Odometry.h>
 
 #include <std_msgs/Float32.h>
 #include <std_msgs/Bool.h>
@@ -58,6 +62,19 @@ tf::Pose tfpose;
 sensor_msgs::CameraInfo cam_info  ;
 #define Ground_Z 0.0
 cv::Mat P(3, 4, CV_64FC1);
+
+
+/*void callback (const nav_msgs::OdometryConstPtr& odom, const sensor_msgs::CameraInfoConstPtr& cam_info)
+{
+    tf::poseMsgToTF(odom->pose.pose, tfpose);
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 4; j++)
+        {
+            P.at<double>(i, j) = cam_info->P.at(i * 4 + j);
+            //  std::cout << "PP" << P  << std::endl ;
+        }
+
+}*/
 
 void odomCallback(const nav_msgs::OdometryConstPtr& odom)
 {
@@ -147,11 +164,16 @@ bool poseEstimationFunction(kuri_mbzirc_challenge_1_msgs::PES::Request  &req,
     ROS_INFO("sending back response: [%ld]", (long int)res.obj.pose.pose.position.x);
     return true;
 }
-
+using namespace message_filters;
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "position_estimation_server");
     ros::NodeHandle n;
+    //message_filters::Subscriber<nav_msgs::Odometry> pose_sub(n, "/mavros/local_position/odom", 1);
+    //message_filters::Subscriber<sensor_msgs::CameraInfo> info_sub(n, "/downward_cam/camera/camera_info", 1);
+    //TimeSynchronizer<nav_msgs::Odometry, sensor_msgs::CameraInfo> sync(pose_sub, info_sub, 10);
+    //sync.registerCallback(boost::bind(&callback, _1, _2));
+
     ros::Subscriber odom_sub = n.subscribe("/mavros/local_position/odom", 1000, odomCallback);
     ros::Subscriber cam_info_sub = n.subscribe("/downward_cam/camera/camera_info", 1000, camInfoCallback);
     ros::ServiceServer service = n.advertiseService("position_estimation", poseEstimationFunction);

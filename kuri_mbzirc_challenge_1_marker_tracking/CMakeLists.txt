@@ -13,16 +13,22 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   message_generation
 )
+unset(OpenCV_CONFIG_PATH CACHE)
+unset(OpenCV_DIR CACHE)
+
+set(CUSTOM_OPENCV_DIR "/usr/local")
 
 # Few differences when dealing with ros-indigo and ros-kinetic
-set( ROS_DISTRO $ENV{ROS_DISTRO} )
-if( ${ROS_DISTRO} STREQUAL "indigo" )
-    find_package(OpenCV 2.4.8 REQUIRED)
-elseif(${ROS_DISTRO} STREQUAL "kinetic")
-    find_package(OpenCV REQUIRED)
-else()
-    message("Unsupported ROS Distro")
-endif()
+#set( ROS_DISTRO $ENV{ROS_DISTRO} )
+#if( ${ROS_DISTRO} STREQUAL "indigo" )
+#    find_package(OpenCV 2.4.8 REQUIRED PATHS ${CUSTOM_OPENCV_DIR} NO_DEFAULT_PATH)
+#elseif(${ROS_DISTRO} STREQUAL "kinetic")
+#    find_package(OpenCV 2 REQUIRED)
+#else()
+#    message("Unsupported ROS Distro")
+#endif()
+
+find_package(OpenCV 2.4.8 REQUIRED)
 
 ################################################
 ## Declare ROS messages, services and actions ##

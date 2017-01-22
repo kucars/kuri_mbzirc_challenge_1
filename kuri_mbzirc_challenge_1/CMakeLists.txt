@@ -28,9 +28,11 @@ catkin_package(
     CATKIN_DEPENDS message_runtime message_generation
 )
 
+set(CUSTOM_OPENCV_DIR "/usr/local")
+
 find_package(Eigen REQUIRED)
 find_package(PCL REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2 REQUIRED PATHS ${CUSTOM_OPENCV_DIR} NO_DEFAULT_PATH)
 find_package(kuri_mbzirc_challenge_1_msgs REQUIRED)
 
 include_directories( include
@@ -48,8 +50,8 @@ install(DIRECTORY launch urdf config
 add_executable(off_board src/off_board.cpp)
 target_link_libraries(off_board ${catkin_LIBRARIES})
 
-#add_executable(offb_follow_target src/offb_follow_target.cpp)
-#target_link_libraries(offb_follow_target ${catkin_LIBRARIES})
+add_executable(offb_follow_target src/offb_follow_target.cpp)
+target_link_libraries(offb_follow_target ${catkin_LIBRARIES})
 
 
 add_executable(server src/server_1.cpp)

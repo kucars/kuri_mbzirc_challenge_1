@@ -68,10 +68,13 @@ include_directories( include
 #add_executable(attitude_control src/landingOnstaticMarker.cpp)
 #target_link_libraries(attitude_control ${catkin_LIBRARIES})
 
-add_executable(attitude_control src/attitudeControlle.cpp)
+#add_executable(attitude_control src/attitudeControlle.cpp)
+#target_link_libraries(attitude_control ${catkin_LIBRARIES})
+#target_link_libraries(attitude_control ${OpenCV_LIBRARIES})
+
+add_executable(attitude_control src/controller.cpp)
 target_link_libraries(attitude_control ${catkin_LIBRARIES})
 target_link_libraries(attitude_control ${OpenCV_LIBRARIES})
-
 
 #add_executable(poseEstimatation src/PositionEstimationServer.cpp src/PositionEstimation.cpp  include/PositionEstimation.h)
 #target_link_libraries(poseEstimatation ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES})
