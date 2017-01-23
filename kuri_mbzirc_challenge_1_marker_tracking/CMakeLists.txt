@@ -34,10 +34,10 @@ find_package(OpenCV 2.4.8 REQUIRED)
 ## Declare ROS messages, services and actions ##
 ################################################
 
-add_message_files(
-  DIRECTORY msg
-  FILES TrackerData.msg
-)
+#add_message_files(
+  #DIRECTORY msg
+  #FILES TrackerData.msg
+#)
 
 generate_messages(
   DEPENDENCIES

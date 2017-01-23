@@ -70,11 +70,11 @@ TrackLandingMark::TrackLandingMark(int x, int y, TrackerType type)
   trackingState = false;
   displayEnabled = false;
   
-  trackerData.minX = 0;
-  trackerData.minY = 0;
-  trackerData.maxX = 0;
-  trackerData.maxY = 0;
-  trackerData.confidence = 0.0;
+  roi.x_offset = 0;
+  roi.y_offset = 0;
+  roi.width = 0;
+  roi.height = 0;
+  roi.do_rectify = true;
 }
 
 bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
@@ -137,11 +137,10 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  }
 	  
 	  // create a message with tracker data and publish it
-	  trackerData.minX = zone_warped.getMinx();
-	  trackerData.minY = zone_warped.getMiny();
-	  trackerData.maxX = zone_warped.getMaxx();
-	  trackerData.maxY = zone_warped.getMaxy();
-	  trackerData.confidence = 1.0f;
+	  roi.x_offset = zone_warped.getMinx();
+	  roi.y_offset = zone_warped.getMiny();
+	  roi.width = zone_warped.getMaxx() - zone_warped.getMinx();
+	  roi.height = zone_warped.getMaxy() - zone_warped.getMiny();
 	}catch(vpTrackingException e)
 	{
 	  ROS_INFO("An exception occurred.. cancelling tracking.");
@@ -150,7 +149,7 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  detectedState = false;
 	}
   }else{
-	trackerData.confidence /= 2.0f; // half the confidence level every step we don't track
+	//trackerData.confidence /= 2.0f; // half the confidence level every step we don't track
   }
   trackEnd = clock();
   
@@ -171,7 +170,7 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 }
 
 // get methods
-kuri_mbzirc_challenge_1_marker_tracking::TrackerData TrackLandingMark::getTrackerData(){ return trackerData; }
+sensor_msgs::RegionOfInterest TrackLandingMark::getRegionOfInterest(){ return roi; }
 
 vpTemplateTrackerWarpHomography TrackLandingMark::getHomography(){ return *warp; }
 

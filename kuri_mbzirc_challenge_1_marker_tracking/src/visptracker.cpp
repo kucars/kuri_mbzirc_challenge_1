@@ -20,11 +20,9 @@
 
 #include "mark_tracker.h"
 
-#include "kuri_mbzirc_challenge_1_marker_tracking/TrackerData.h"
-
 #include <time.h>
 
-ros::Publisher trackerDataPub;
+ros::Publisher roiPub;
 TrackLandingMark * detectorTracker;
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
@@ -35,8 +33,8 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   detectorTracker->detectAndTrack(msg);
   end = clock();
   //ROS_INFO("detectorTracker took %f seconds", ((float)(end - start))/CLOCKS_PER_SEC);
-  kuri_mbzirc_challenge_1_marker_tracking::TrackerData data = detectorTracker->getTrackerData();
-  trackerDataPub.publish(data);
+  sensor_msgs::RegionOfInterest data = detectorTracker->getRegionOfInterest();
+  roiPub.publish(data);
 }
 
 // Reads params, or sets default parameters if parameters are not found
@@ -90,7 +88,7 @@ int main(int argc, char ** argv)
   detectorTracker = new TrackLandingMark(camSizeX, camSizeY, (TrackerType)trackerType);
   
   ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
-  trackerDataPub = n.advertise<kuri_mbzirc_challenge_1_marker_tracking::TrackerData>(pubTopic, 1000);
+  roiPub = n.advertise<sensor_msgs::RegionOfInterest>(pubTopic, 1000);
 
   detectorTracker->setSampling(4, 4);
   detectorTracker->setLambda(0.001);

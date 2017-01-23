@@ -5,8 +5,8 @@
 #include <visp/vpTemplateTracker.h>
 #include <visp/vpTemplateTrackerWarpHomography.h>
 #include "detector/landing_mark_detection.h"
-#include "kuri_mbzirc_challenge_1_marker_tracking/TrackerData.h"
 #include "visp_bridge/image.h"
+#include "sensor_msgs/RegionOfInterest.h"
 
 enum TrackerType 
 {
@@ -32,7 +32,7 @@ public:
   void reset();
   
   // get methods
-  kuri_mbzirc_challenge_1_marker_tracking::TrackerData getTrackerData();
+  sensor_msgs::RegionOfInterest getRegionOfInterest();
   vpTemplateTrackerWarpHomography getHomography();
   bool markDetected();
   bool isTracking();
@@ -49,7 +49,7 @@ private:
   vpTemplateTracker * tracker;
   vpTemplateTrackerWarpHomography * warp;
   
-  kuri_mbzirc_challenge_1_marker_tracking::TrackerData trackerData;
+  sensor_msgs::RegionOfInterest roi;
   
   bool detectedState; // true if we detected something in the last state;
   bool trackingState; // true if we're tracking
