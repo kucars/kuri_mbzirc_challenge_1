@@ -1,4 +1,6 @@
-int64 A
-int64 B
+float64 A
+float64 B
 ---
-kuri_msgs/Object obj
+float64 X 
+float64 Y 
+float64 Z

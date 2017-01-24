@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   actionlib_msgs
   visp_bridge
+  cftld_ros
 )
 
 ################################################
@@ -34,7 +35,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   #INCLUDE_DIRS include
 #  LIBRARIES kuri_mbzirc_challenge_1_trajectory_following
-  CATKIN_DEPENDS roscpp rospy actionlib_msgs sensor_msgs nav_msgs kuri_mbzirc_challenge_1_msgs kuri_msgs
+  CATKIN_DEPENDS roscpp rospy actionlib_msgs sensor_msgs nav_msgs kuri_mbzirc_challenge_1_msgs kuri_msgs cftld_ros
 #  DEPENDS system_lib
 )
 find_package(kuri_mbzirc_challenge_1_msgs REQUIRED)

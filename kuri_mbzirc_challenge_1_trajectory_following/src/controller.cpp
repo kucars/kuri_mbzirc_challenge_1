@@ -4,6 +4,7 @@
     #include <std_msgs/String.h>
     #include <sensor_msgs/RegionOfInterest.h>
     #include "kuri_mbzirc_challenge_1_msgs/PES.h"
+#include <sensor_msgs/NavSatFix.h>
 
     #include <mavros_msgs/CommandBool.h>
     #include <mavros_msgs/SetMode.h>
@@ -86,7 +87,7 @@
       currentState = *msg;
     }
   
-    geometry_msgs::PoseStamped goalPose;
+  geometry_msgs::PoseStamped goalPose;
     
   void goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
     {
@@ -95,14 +96,18 @@
       goalPose = *msg ;
     }
     
-    void localPoseCallback(const geometry_msgs :: PoseStamped :: ConstPtr& msg)
+    void globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
     {
       //std::cout << "switch " <<  caseSwitch << std::endl ; ; 
 
-      real.x=msg ->pose.position.x;
-      real.y=msg ->pose.position.y;
-      real.z=msg ->pose.position.z;
-      w=msg ->pose.orientation.z;
+      //real.x=msg ->pose.position.x;
+      //real.y=msg ->pose.position.y;
+      //real.z=msg ->pose.position.z;
+      //w=msg ->pose.orientation.z;
+      real.x=msg ->latitude;
+      real.y=msg ->longitude;
+      real.z=msg ->altitude;
+      //w=msg ->pose.orientation.z;
 
       prev_error_x = error_x;
       prev_error_y = error_y;
@@ -134,8 +139,8 @@
       action_z = proportional_z + integral_z + derivative_z;
       action_w = 10 * proportional_w + integral_w + derivative_w;
 
-      twist.twist.linear.x = 0.01* action_x;
-      twist.twist.linear.y = 0.01*action_y;
+      twist.twist.linear.x = 0.001* action_x;
+      twist.twist.linear.y = 0.001*action_y;
       twist.twist.linear.z = 0.01*action_z;
       twist.twist.angular.z = action_w;
     /* ROS_INFO("Error X: %0.2f \n", error_x);
@@ -205,7 +210,8 @@
       ros::NodeHandle nh;
       ros::Publisher velPub = nh.advertise <geometry_msgs ::TwistStamped >("/mavros/setpoint_velocity/cmd_vel", 1);
       ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
-      ros::Subscriber localPoseSub     = nh.subscribe("/mavros/local_position/pose", 1000, localPoseCallback);
+      //ros::Subscriber localPoseSub     = nh.subscribe("/mavros/local_position/pose", 1000, localPoseCallback);
+      ros::Subscriber pose_global_sub = nh.subscribe("/mavros/global_position/global", 1000, globalPoseCallback);
       //ros::Subscriber localPoseSub     = nh.subscribe("/mavros/local_position/pose", 1000, localPoseCallback);
       ros::Subscriber goalSub          = nh.subscribe("/kuri_offboard_attitude_control_test/goal", 1000, goalCallback);
       ros::Subscriber missionSub      = nh.subscribe("/startMission", 1000, MissionCallback);

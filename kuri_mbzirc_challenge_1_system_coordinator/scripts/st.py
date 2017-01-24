@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+-#!/usr/bin/env python
 
 import roslib; 
 import rospy
@@ -12,6 +12,8 @@ from geometry_msgs.msg import PoseStamped
 import kuri_mbzirc_challenge_1_msgs.msg
 from kuri_mbzirc_challenge_1_msgs.srv import PES 
 from kuri_msgs.msg import Object
+from cftld_ros.msg import Track
+from sensor_msgs.msg import NavSatFix
 
 xPose = 0 
 yPose = 0 
@@ -24,15 +26,22 @@ class exploration(smach.State):
         self.end_mission_sub = rospy.Subscriber('/endMission', String, self.missionCallback)
         self.start_mission_pub = rospy.Publisher('/startMission' , String, queue_size=10)
         self.goal_pub = rospy.Publisher('/kuri_offboard_attitude_control_test/goal' , PoseStamped, queue_size=1)
-        self.pose_sub = rospy.Subscriber('/mavros/local_position/pose', PoseStamped, self.localPoseCallback);
+        #self.pose_local_sub = rospy.Subscriber('/mavros/local_position/pose', PoseStamped, self.localPoseCallback);
+        self.pose_global_sub = rospy.Subscriber('/mavros/global_position/global', NavSatFix, self.globalPoseCallback);
+
         self.tracked = False 
 
+    def globalPoseCallback(self, topic):
+      xPose = topic.latitude
+      yPose = topic.longitude
+      zPose = topic.altitude
+      
+    '''   
     def localPoseCallback(self, topic):
       xPose = topic.pose.position.x 
       yPose = topic.pose.position.y
       zPose = topic.pose.position.z 
-
-
+    '''
     def missionCallback(self , topic):
 	if topic.data == 'reachedCenter':
 		self.tracked = True
@@ -54,8 +63,8 @@ class exploration(smach.State):
 	else: 
  	    print "moveWAYPOINT " 
  	    msg2 = PoseStamped() 
- 	    msg2.pose.position.x =  0 
-	    msg2.pose.position.y =  0 
+ 	    msg2.pose.position.x =  47.397742
+	    msg2.pose.position.y =  8.5455938
 	    msg2.pose.position.z =  10 
 	    self.goal_pub.publish(msg2)
 	    return 'StayInExploration' 
@@ -68,20 +77,27 @@ class trajectory_following(smach.State):
         self.goal_pub = rospy.Publisher('/kuri_offboard_attitude_control_test/goal' , PoseStamped, queue_size=1)
         self.end_mission_sub = rospy.Subscriber('/endMission', String, self.missionCallback)
         self.start_mission_pub = rospy.Publisher('/startMission' , String, queue_size=1)
-        self.box_sub = rospy.Subscriber('/ch1/marker_bb', RegionOfInterest, self.boxCallback)
-        self.pose_sub = rospy.Subscriber('/mavros/local_position/pose', PoseStamped, self.localPoseCallback);
+        #self.box_sub = rospy.Subscriber('/ch1/marker_bb', RegionOfInterest, self.boxCallback)
+        self.box_sub = rospy.Subscriber('/cftld/track', Track, self.boxCallback)
+	self.pose_global_sub = rospy.Subscriber('/mavros/global_position/global', NavSatFix, self.globalPoseCallback);
+        #self.pose_sub = rospy.Subscriber('/mavros/local_position/pose', PoseStamped, self.localPoseCallback);
 	self.resp1 = Object() 
 	self.res = PoseStamped () 
         self.a = 0 
         self.b = 0 
 	self.moveToDocking = False 
-
+    '''
     def localPoseCallback(self, topic):
       xPose = topic.pose.position.x 
       yPose = topic.pose.position.y
       zPose = topic.pose.position.z 
-
-
+    '''
+    def globalPoseCallback(self, topic):
+      xPose = topic.latitude
+      yPose = topic.longitude
+      zPose = topic.altitude
+      
+      
     def missionCallback(self , topic):
 	if topic.data == "Landed":
 		self.moveToDocking = True 
@@ -163,8 +179,8 @@ class docking(smach.State):
         time.sleep(2)
         if self.moveToEnd == False:
 	        msg6= PoseStamped() 
-	   	msg6.pose.position.x =  0 
-		msg6.pose.position.y =  0 
+	   	msg6.pose.position.x =  47.397742   
+		msg6.pose.position.y = 8.5455938
 		msg6.pose.position.z =  1.5 
 		self.goal_pub.publish(msg6)
                 return 'docking'

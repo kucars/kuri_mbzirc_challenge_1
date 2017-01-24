@@ -2,8 +2,8 @@
 <launch>
 
     <!-- MAVROS posix SITL environment launch script -->
-    <arg name="x" default="0"/>
-    <arg name="y" default="24"/>
+    <arg name="x" default="24"/>
+    <arg name="y" default="0"/>
     <arg name="z" default="0.066982"/>
     <arg name="R" default="0"/>
     <arg name="P" default="-0.008468"/>
@@ -27,7 +27,7 @@
 
     <arg name="pluginlists_yaml" default="$(find mavros)/launch/px4_pluginlists.yaml" />
     <arg name="config_yaml" default="$(find mavros)/launch/px4_config.yaml" />
-    <arg name="enable_truck_motion" default="true"/>
+    <arg name="enable_truck_motion" default="false"/>
 
     <!-- running gazebo + spawning iris robot --> 
     <include file="$(find px4)/launch/posix_sitl.launch">
@@ -70,11 +70,13 @@
 
     <!-- running truck --> 
     <include file="$(find kuri_mbzirc_challenge_1)/launch/truck.launch">
-    <arg name="enable_truck_motion" value="$(arg enable_truck_motion)"/>
-		</include>
-
-
-
+    <arg name="enable_truck_motion" value="$(arg enable_truck_motion)"/></include>
+  
+  
+  <!--<node name="service_Postition_estimation" pkg="kuri_mbzirc_challenge_1" type="server" ></node>-->
+    <node name="off_board" pkg="kuri_mbzirc_challenge_1" type="off_board" ></node>
+    <node name="marker_detection" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="marker_detection_gazebo.py" /> <!--output="screen"-->
+    <!--  <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="st4.py" /> --><!--output="screen"-->
 </launch>
 
 

@@ -37,6 +37,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/NavSatFix.h>
 
 #include <nav_msgs/Odometry.h>
 #include <iostream>
@@ -81,13 +82,24 @@ void odomCallback(const nav_msgs::OdometryConstPtr& odom)
     tf::poseMsgToTF(odom->pose.pose, tfpose);
 }
 
+/*void odomGlobalCallback(const sensor_msgs::NavSatFixConstPtr& topic)
+{
+
+    nav_msgs::Odometry odom ; 
+    odom.pose.pose.position.x = topic->latitude;
+    odom.pose.pose.position.y = topic->longitude;
+    odom.pose.pose.position.z = topic->altitude;
+
+    tf::poseMsgToTF(odom.pose.pose, tfpose);
+}*/
+
 
 void camInfoCallback(const sensor_msgs::CameraInfoConstPtr& cam_info)
 {
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 4; j++)
         {
-            P.at<double>(i, j) = cam_info->P.at(i * 4 + j);
+            P.at<double>(i, j) = cam_info->P.at(i * 4.0 + j);
             //  std::cout << "PP" << P  << std::endl ;
         }
 }
@@ -97,10 +109,11 @@ bool poseEstimationFunction(kuri_mbzirc_challenge_1_msgs::PES::Request  &req,
                             kuri_mbzirc_challenge_1_msgs::PES::Response &res)
 {
     tf::Transform BaseToCamera;
-    double imageWidth = 640 ;
-    double imagehight = 480 ;
+    double imageWidth = 1228 ;
+    double imagehight = 1027 ;
     BaseToCamera.setOrigin(tf::Vector3(0.0, 0.0, -0.045));
-    BaseToCamera.setRotation(tf::Quaternion(0.707, -0.707, 0.000, -0.000));
+    //BaseToCamera.setRotation(tf::Quaternion(0.707, -0.707, 0.000, -0.000));
+    BaseToCamera.setRotation(tf::Quaternion(0.9999060498015511, 0, 0, -0.013707354604664749));
 
     tf::Transform extrisic;
     cv::Mat P_Mat_G(3, 4, CV_64FC1);
@@ -157,11 +170,19 @@ bool poseEstimationFunction(kuri_mbzirc_challenge_1_msgs::PES::Request  &req,
     bvu[0] = a[2] * Ground_Z + a[3] - req.A  * c[2] * Ground_Z - req.A  * c[3];
     bvu[1] = b[2] * Ground_Z + b[3] - req.B  * c[2] * Ground_Z - req.B  * c[3];
     float DomB = B[1][1] * B[0][0] - B[0][1] * B[1][0];
-    res.obj.pose.pose.position.x  = (B[1][1] * bvu[0] - B[0][1] * bvu[1]) / DomB ;
-    res.obj.pose.pose.position.y  = (B[0][0] * bvu[1] - B[1][0] * bvu[0]) / DomB ;
+    //res.obj.pose.pose.position.x  = (B[1][1] * bvu[0] - B[0][1] * bvu[1]) / DomB ;
+    //res.obj.pose.pose.position.y  = (B[0][0] * bvu[1] - B[1][0] * bvu[0]) / DomB ;
+    res.X   = (B[1][1] * bvu[0] - B[0][1] * bvu[1]) / DomB ;
+    res.Y   = (B[0][0] * bvu[1] - B[1][0] * bvu[0]) / DomB ;
+    res.Z = 2 ;
     //res.obj.pose.pose.position.z = 0 ;
-    ROS_INFO("request: x=%ld, y=%ld", (long int)req.A, (long int)req.B);
-    ROS_INFO("sending back response: [%ld]", (long int)res.obj.pose.pose.position.x);
+    //ROS_INFO("request: x=%ld, y=%ld", (long int)req.A, (long int)req.B);
+    //ROS_INFO("sending back response: [%ld]", (long int)res.obj.pose.pose.position.x);
+    //std::cout << "request " << req.A << "    " << req.B << std::endl ; 
+    //std::cout << "response" << res.X << "    " << res.Y << std::endl ; 
+    
+    ROS_INFO("request: x=%f, y=%f", (float)req.A, (float)req.B);
+    ROS_INFO("sending back response: x=%f, y=%f", (float)res.X , (float)res.Y);
     return true;
 }
 using namespace message_filters;
@@ -174,7 +195,10 @@ int main(int argc, char **argv)
     //TimeSynchronizer<nav_msgs::Odometry, sensor_msgs::CameraInfo> sync(pose_sub, info_sub, 10);
     //sync.registerCallback(boost::bind(&callback, _1, _2));
 
-    ros::Subscriber odom_sub = n.subscribe("/mavros/local_position/odom", 1000, odomCallback);
+    //ros::Subscriber odom_sub = n.subscribe("/mavros/local_position/odom", 1000, odomCallback);
+    //ros::Subscriber pose_global_sub = n.subscribe("/mavros/global_position/global", 1000, odomGlobalCallback);
+    ros::Subscriber odom_sub = n.subscribe("/mavros/global_position/local", 1000, odomCallback);
+    
     ros::Subscriber cam_info_sub = n.subscribe("/downward_cam/camera/camera_info", 1000, camInfoCallback);
     ros::ServiceServer service = n.advertiseService("position_estimation", poseEstimationFunction);
     ROS_INFO("Ready to convert.");
