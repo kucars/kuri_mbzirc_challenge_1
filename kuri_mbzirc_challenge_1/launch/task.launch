@@ -73,10 +73,10 @@
     <arg name="enable_truck_motion" value="$(arg enable_truck_motion)"/></include>
   
   
-  <!--<node name="service_Postition_estimation" pkg="kuri_mbzirc_challenge_1" type="server" ></node>-->
+    <node name="service_Postition_estimation" pkg="kuri_mbzirc_challenge_1" type="server" ></node>
     <node name="off_board" pkg="kuri_mbzirc_challenge_1" type="off_board" ></node>
     <node name="marker_detection" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="marker_detection_gazebo.py" /> <!--output="screen"-->
-    <!--  <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="st4.py" /> --><!--output="screen"-->
+    <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="st4.py" /><!--output="screen"-->
 </launch>
 
 
