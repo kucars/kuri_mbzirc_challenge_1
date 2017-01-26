@@ -83,8 +83,8 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
   clock_t trackStart, trackEnd, displayStart, displayEnd;
 
   vbStart = clock();
+  I = visp_bridge::toVispImage(*msg);
   if(displayEnabled){
-	I = visp_bridge::toVispImage(*msg);
 	vpDisplay::display(I);
   }
   vbEnd = clock();
