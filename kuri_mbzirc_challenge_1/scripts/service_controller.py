@@ -45,8 +45,6 @@ class Controller:
 		self.pub2 = rospy.Publisher('kuri_goal', PoseStamped, queue_size=10)
 		self.sub =  rospy.Subscriber("mavros/global_position/local", PoseStamed, poseCallback)
      		self.serviceType = 3
-     		self.exploreResult = "" 
-     		self.landResult = "" 
 		self.exploreFlag = False
 		self.landFlagDone = 0 
 		self.msg  = PoseStamped() 
@@ -74,8 +72,6 @@ class Controller:
 				return navResponse("aborted")
 		else :
 			self.serviceType = 3
-			if self.landFlag:
-				return navigationResponse("aborted")
 			print "self.serviceType", self.serviceType
 		print "self.serviceType 2" , self.serviceType
 
@@ -96,7 +92,7 @@ class Controller:
 		else:
 			self.msg.pose.position.x = msgPose.pose.position.x
 			self.msg.pose.position.y = msgPose.pose.position.y
-			self.msg.pose.position.z = msgPose.pose.position.z
+			self.msg.pose.position.z = 1
 			self.pub.publich(self.msg) 
 			
 					
