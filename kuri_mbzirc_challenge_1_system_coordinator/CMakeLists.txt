@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   actionlib_msgs
   visp_bridge
-  cftld_ros
+#  cftld_ros
 )
 
 ################################################
