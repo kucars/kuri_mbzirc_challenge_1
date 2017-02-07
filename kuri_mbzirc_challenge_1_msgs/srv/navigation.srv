@@ -4,5 +4,5 @@ float64 wayPointY
 float64 wayPointZ
 int32 LDFlag
 ---
-int32 ExplorationResponse
-int32 LandingResponse
+std_msgs/String navResponse
+

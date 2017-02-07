@@ -54,24 +54,28 @@ class Controller:
    
    	def pos_vel_controller(self , req):
 		self.landFlagDone = req.LDFlag 
-   		if req.type == "explore" :
+   		if req.type == 1 :
 			self.serviceType = 1
 			self.msg.pose.position.x = req.xg
 			self.msg.pose.position.y = req.yg
 			self.msg.pose.position.z = req.zg
 			if self.exploreFlag:
-				return navigationResponse("Explored")
-		else if req.type == "land":
+				return navResponse("succeeded")
+			else: 
+				return navResponse("aborted")
+		else if req.type == 2:
 			self.serviceType = 2 	
 			self.msg2.pose.position.x = req.xg
 			self.msg2.pose.position.y = req.yg
 			self.msg2.pose.position.z = req.zg
 			if self.landFlag:
-				return navigationResponse("Landed")
+				return navResponse("succeeded")
+			else: 
+				return navResponse("aborted")
 		else :
 			self.serviceType = 3
 			if self.landFlag:
-				return navigationResponse("Nothing")
+				return navigationResponse("aborted")
 			print "self.serviceType", self.serviceType
 		print "self.serviceType 2" , self.serviceType
 
