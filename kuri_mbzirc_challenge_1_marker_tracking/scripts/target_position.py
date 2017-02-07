@@ -54,7 +54,7 @@ class target_position:
 
 		# Initialize the Region of Interest and its publisher
 		self.target_pos = PoseStamped()
-		self.target_pos_pub = rospy.Publisher("/target_position/pose", PoseStamped, queue_size = 1)
+		self.target_pos_pub = rospy.Publisher("/kuri_offboard_attitude_control_test/goal", PoseStamped, queue_size = 1)
 
 		self.image_width = 0
 		self.image_height = 0

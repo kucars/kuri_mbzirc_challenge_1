@@ -10,11 +10,11 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
 
-float tolerance = 0.5; // 0.05; //0.05;
-float kp = 5;
-float ki = 0.002;
-float kd = 5;
-double kpz = 5 ; 
+float tolerance = 0.6; // 0.05; //0.05;
+float kp = 7;//was 5 , new values //1//0.5//20
+float ki = 0;//was 0.002 >> .02//2//0.005
+float kd = 15;//was 5 >> 15//10//2.5//1
+float kpz = 10 ;
 float w;
 
 float error_x = 0;
@@ -110,7 +110,7 @@ void localPoseCallback(const nav_msgs :: Odometry :: ConstPtr& msg)
   error_w = 0 - w;
   
   std::cout << "Error X " <<  goalPose.pose.position.x  << "\t\t\t\t\t\t"    <<  real.x  <<  "\t\t\t\t\t\t"  << error_x <<std::endl; 
-  std::cout << "Error Y " <<  goalPose.pose.position.y  << "\t\t\t\t\t"    <<  real.y  <<  "\t\t\t\t\t\t"   << error_y <<std::endl; 
+  std::cout << "Error Y " <<  goalPose.pose.position.y  << "\t\t\t\t\t"    <<  real.y  <<  "\t\t\t\t\t"   << error_y <<std::endl;
   std::cout << "Error Z " <<  goalPose.pose.position.z  << "\t\t\t\t\t\t"    <<  real.z  <<  "\t\t\t\t\t\t"   << error_z <<std::endl; 
 
   //std::cout << "Error Y " << error_y <<std::endl; 
@@ -118,7 +118,7 @@ void localPoseCallback(const nav_msgs :: Odometry :: ConstPtr& msg)
   
   proportional_x = kp * error_x;
   proportional_y = kp * error_y;
-  proportional_z = kp * error_z;
+  proportional_z = kpz * error_z;
   proportional_w = kp * error_w;
   integral_x += ki * error_x;
   integral_y += ki * error_y;
@@ -129,10 +129,10 @@ void localPoseCallback(const nav_msgs :: Odometry :: ConstPtr& msg)
   derivative_z = kd * (error_z - prev_error_z);
   derivative_w = kd * (error_w - prev_error_w);
 
-  action_x = proportional_x; // + integral_x + derivative_x;
-  action_y = proportional_y;//  + integral_y + derivative_y;
-  action_z = proportional_z;//  + integral_z + derivative_z;
-  action_w = 10 * proportional_w ;//+ integral_w + derivative_w;
+  action_x = proportional_x       + derivative_x ;//+ integral_x;
+  action_y = proportional_y       + derivative_y ;//+ integral_y;
+  action_z = proportional_z       + derivative_z ;//+ integral_z ;
+  action_w = 10 * proportional_w  + derivative_w ;//+ integral_w;
 
   twist.twist.linear.x = 0.01*action_x;
   twist.twist.linear.y = 0.01*action_y;
