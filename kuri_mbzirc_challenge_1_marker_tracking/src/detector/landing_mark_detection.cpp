@@ -1,9 +1,16 @@
 #include "landing_mark_detection.h"
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
+#include <typeinfo>
 
 using namespace cv;
 using namespace std;
+
+void DetectLandingMark::getRectCoords(double out[8])
+{
+	for(int i = 0; i < 8; i++)
+		out[i] = rectCoords[i];
+}
 
 bool DetectLandingMark::detect(const sensor_msgs::Image::ConstPtr& msg)
 {
@@ -47,9 +54,13 @@ bool DetectLandingMark::detect(Mat frame, int show_result=0) {
 	for( int i = 0; i< contours.size(); i++ ){
 		double peri = arcLength(contours[i], true);
 		approxPolyDP(contours[i], approx, 0.01 * peri, true);
-		
 		//ensure that the approximated contour is "roughly" rectangular
-		if(approx.size()>=4 && approx.size()<=6){
+		if(approx.size()>=4 && approx.size()<=6){	
+			
+			for(int k=0; k<approx.size(); k++){
+				ROS_INFO("k=%d -----> x=%d, y=%d",k,approx[k].x,approx[k].y);
+			}
+			
 			Rect rect = boundingRect(approx);
 			float aspectRatio = rect.width / float(rect.height);
 			
@@ -100,6 +111,11 @@ bool DetectLandingMark::detect(Mat frame, int show_result=0) {
 						a.height = rect.height;
 						a.center_x = average_x;
 						a.center_y = average_y;
+						//also add rectangle coordinates to the marker_pixel_coord struct
+						for(int k=0; k<approx.size(); k++){
+							rectCoords[k*2] = approx[k].x;
+							rectCoords[k*2 + 1] = approx[k].y;
+						}
 					}
 				}
 			}
