@@ -20,29 +20,29 @@ SimpleMotionFilter::~SimpleMotionFilter()
 {
 }
 
-void SimpleMotionFilter::boxUpdate(kuri_mbzirc_challenge_1_marker_tracking::TrackerData& data, float step)
+void SimpleMotionFilter::boxUpdate(sensor_msgs::RegionOfInterest& data, float step)
 {
   prev = current;
   current = data;
   timestep = step;
 }
 
-kuri_mbzirc_challenge_1_marker_tracking::TrackerData SimpleMotionFilter::interpolate(float step)
+sensor_msgs::RegionOfInterest SimpleMotionFilter::interpolate(float step)
 {
-  float minXSpeed = calcSpeed(prev.minX, current.minX, timestep);
-  float minYSpeed = calcSpeed(prev.minX, current.minX, timestep);
-  float maxXSpeed = calcSpeed(prev.minX, current.minX, timestep);
-  float maxYSpeed = calcSpeed(prev.minX, current.minX, timestep);
+  float minXSpeed = calcSpeed(prev.x_offset, current.x_offset, timestep);
+  float minYSpeed = calcSpeed(prev.y_offset, current.y_offset, timestep);
+  float maxXSpeed = calcSpeed(prev.x_offset + prev.width, current.x_offset + current.width, timestep);
+  float maxYSpeed = calcSpeed(prev.y_offset + prev.height, current.y_offset + current.height, timestep);
   
-  kuri_mbzirc_challenge_1_marker_tracking::TrackerData newData;
+  sensor_msgs::RegionOfInterest newData;
   
   // confidence is calculated as 1/(1 + frames), where frames is (step / this->timestep)
   // i.e. for each "extra" frame this interpolates, the confidence drops by half
-  newData.confidence = 1.0f / (1.0f + (step / timestep));
-  newData.minX = calcNewPoint(current.minX, minXSpeed, step);
-  newData.minY = calcNewPoint(current.minY, minYSpeed, step);
-  newData.maxX = calcNewPoint(current.maxX, maxXSpeed, step);
-  newData.maxY = calcNewPoint(current.maxY, maxYSpeed, step);
+  // newData.confidence = 1.0f / (1.0f + (step / timestep)); // We switched to RegionOfInterest (which doesn't store confidence)
+  newData.x_offset = calcNewPoint(current.x_offset, minXSpeed, step);
+  newData.y_offset = calcNewPoint(current.y_offset, minYSpeed, step);
+  newData.width = calcNewPoint(current.x_offset + current.width, maxXSpeed, step) - newData.x_offset;
+  newData.height = calcNewPoint(current.y_offset + current.height, maxYSpeed, step) - newData.y_offset;
   
   return newData;  
 }
