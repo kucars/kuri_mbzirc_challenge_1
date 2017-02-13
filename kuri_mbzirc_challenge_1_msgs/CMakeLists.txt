@@ -42,6 +42,7 @@ add_service_files(
   DIRECTORY srv
   FILES
   PES.srv
+  navigation.srv
 
 )
 

@@ -12,7 +12,7 @@
 #  this list of conditions and the following disclaimer in the documentation
 #  and/or other materials provided with the distribution.
 #
-#* Neither the name of kuri_mbzirc_challenge_3 nor the names of its
+#* Neither the name of kuri_mbzirc_challenge_1 nor the names of its
 #  contributors may be used to endorse or promote products derived from
 #  this software without specific prior written permission.
 #
@@ -30,75 +30,135 @@
 import roslib
 import rospy
 from kuri_msgs.msg import *
-from kuri_mbzirc_challenge_1_msgs.msg import navigation
-from geometry_msgs.msg import PoseStamed 
+from kuri_mbzirc_challenge_1_msgs.msg import *
 
+from kuri_mbzirc_challenge_1_msgs.srv import *
+from kuri_mbzirc_challenge_1_msgs.srv import navigationResponse
+from kuri_mbzirc_challenge_1_msgs.srv import navigation , navigationRequest , navigationResponse
 
-msg  = PoseStamped() 
-msg2 = poseStamped() 
+from geometry_msgs.msg import PoseStamped 
+from nav_msgs.msg import Odometry 
 
-class Controller:
+class ControllerService:
 	def __init__(self):
      		print 'Starting Service 1'
      		self.s = rospy.Service('controller_service', navigation , self.pos_vel_controller)
-		self.pub = rospy.Publisher('mavros/setpoint_position/pose', PoseStamped, queue_size=10)
-		self.pub2 = rospy.Publisher('kuri_goal', PoseStamped, queue_size=10)
-		self.sub =  rospy.Subscriber("mavros/global_position/local", PoseStamed, poseCallback)
+		self.pub = rospy.Publisher("mavros/setpoint_position/local", PoseStamped, queue_size=10)
+		self.pub2 = rospy.Publisher('/kuri_offboard_attitude_control_test/goal', PoseStamped, queue_size=10)
+		self.sub =  rospy.Subscriber("mavros/global_position/local", Odometry, self.poseCallback)
+		self.sub2 =  rospy.Subscriber("mavros/local_position/pose", PoseStamped, self.poseCallback2)
      		self.serviceType = 3
 		self.exploreFlag = False
+		self.landFlag = False 
 		self.landFlagDone = 0 
 		self.msg  = PoseStamped() 
-		self.msg2 = poseStamped() 
-   
+		self.msg2 = PoseStamped() 
+		self.PoseXlocal = 0 
+		self.PoseYlocal = 0 
+		self.PoseZlocal = 0
+		self.strt = "Nothing"# navResponse
+
+	
+
    	def pos_vel_controller(self , req):
 		self.landFlagDone = req.LDFlag 
-   		if req.type == 1 :
+   		if req.srvtype == 1 :
 			self.serviceType = 1
-			self.msg.pose.position.x = req.xg
-			self.msg.pose.position.y = req.yg
-			self.msg.pose.position.z = req.zg
-			if self.exploreFlag:
-				return navResponse("succeeded")
+			self.msg.pose.position.x = req.wayPointX
+			self.msg.pose.position.y = req.wayPointY
+			self.msg.pose.position.z = req.wayPointZ
+			if self.exploreFlag:	
+				navigationResponse = "succeeded"
+				n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
+				n.navResponse = "succeeded"
+				print "n" , n 
+				return n 
 			else: 
-				return navResponse("aborted")
-		else if req.type == 2:
-			self.serviceType = 2 	
-			self.msg2.pose.position.x = req.xg
-			self.msg2.pose.position.y = req.yg
-			self.msg2.pose.position.z = req.zg
-			if self.landFlag:
-				return navResponse("succeeded")
-			else: 
-				return navResponse("aborted")
-		else :
-			self.serviceType = 3
-			print "self.serviceType", self.serviceType
-		print "self.serviceType 2" , self.serviceType
-
-   	def poseCallback(self , msgPose):
+				n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse() 
+				n.navResponse = "aborted"
+				return n 
+		else:
+			if req.srvtype == 2:
+				self.serviceType = 2 	
+				print 'landFlag' , self.landFlagDone , '   ', self.landFlag
+				self.msg2.pose.position.x = req.wayPointX
+				self.msg2.pose.position.y = req.wayPointY
+				self.msg2.pose.position.z = req.wayPointZ
+				if self.landFlagDone :#or self.landFlag: # this comes form the state machine 
+				  print "Landed DONE " 
+				  n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
+				  n.navResponse = "succeeded2"
+				  return n 
+				else: 
+				  print "Keep landing" 
+				  n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
+				  n.navResponse = "aborted"
+				  return n 
+				
+				
+	def poseCallback(self , msgPose):
 		if self.serviceType == 1: 
-			self.pub.publisher(self.msg) 
-			if (abs(msgPose.pose.position.x - self.msg.pose.position.x) < 0.2 and
-			    abs(msgPose.pose.position.y - self.msg.pose.position.y) < 0.2 and 
-			    abs(msgPose.pose.position.z - self.msg.pose.position.z) < 0.2 )
+			#print "FromCallback 1" 
+			self.pub.publish(self.msg) 
+			###################################################################################3
+			# This step uses the local data instead of the global data until we find a solution 
+			###################################################################################3
+			#if (abs(msgPose.pose.position.x - self.msg.pose.position.x) < 0.2 and
+			#    abs(msgPose.pose.position.y - self.msg.pose.position.y) < 0.2 and 
+			#    abs(msgPose.pose.position.z - self.msg.pose.position.z) < 0.2 )
+			if abs(self.PoseXlocal - self.msg.pose.position.x) < 0.2 and abs(self.PoseYlocal- self.msg.pose.position.y) < 0.2 and abs(self.PoseZlocal- self.msg.pose.position.z) < 0.2 :
 				self.exploreFlag = True 
 				self.serviceType = 0
 			
-		if self.serviceType == 2:
-			self.pub2.publich(self.msg2) 
-			if (self.landFlagDone): 
-				self.landFlag = 1 
-				self.serviceType = 0
-		else:
-			self.msg.pose.position.x = msgPose.pose.position.x
-			self.msg.pose.position.y = msgPose.pose.position.y
-			self.msg.pose.position.z = 1
-			self.pub.publich(self.msg) 
+		else: 
+			if self.serviceType == 2:
+			      self.pub2.publish(self.msg2)
+			      #print 'publishing msg2' 
+			      #if (abs(msgPose.pose.pose.position.x - self.msg2.pose.position.x) < 0.2 and abs(msgPose.pose.pose.position.y - self.msg2.pose.position.y) < 0.2 and abs(msgPose.pose.pose.position.z - self.msg2.pose.position.z) < 0.2 ) :
+				#self.landFlag = True
+				#self.serviceType = 0
+			      if (self.landFlagDone): 
+				  self.landFlag = True 
+				  self.serviceType = 0
+			else:
+			      if self.serviceType == 3: 
+				#if this is being run before the state machine 
+				#print "Publish this msg "
+				self.msg.pose.position.x = self.PoseXlocal#msgPose.pose.pose.position.x
+				print self.msg.pose.position.x
+				self.msg.pose.position.y = self.PoseYlocal#msgPose.pose.pose.position.y
+				print self.msg.pose.position.y
+				self.msg.pose.position.z = 1 #msgPose.pose.pose.position.z + 0.2 
+				print self.msg.pose.position.z
+				self.pub.publish(self.msg) 
+			      else:  
+				#if this Hovering when other states are being run  
+				#print "Hover" 
+				self.msg.pose.position.x = self.PoseXlocal#msgPose.pose.pose.position.x
+				self.msg.pose.position.y = self.PoseYlocal#msgPose.pose.pose.position.y
+				self.msg.pose.position.z = self.PoseZlocal #msgPose.pose.pose.position.z + 0.2 
+				self.msg2.pose.position.x = msgPose.pose.pose.position.x
+				self.msg2.pose.position.y = msgPose.pose.pose.position.y
+				self.msg2.pose.position.z = msgPose.pose.pose.position.z
+				self.pub.publish(self.msg) 
+				self.pub2.publish(self.msg2) 
+
+				
+	    
+	def poseCallback2(self , msgPoseLocal):
+		#print "Reading local position data" 
+		################################################################################3
+		# Only used becasue the setpoint_position only accept local data local reference 
+		################################################################################3
+		self.PoseXlocal = msgPoseLocal.pose.position.x
+		self.PoseYlocal = msgPoseLocal.pose.position.y
+		self.PoseZlocal = msgPoseLocal.pose.position.z
+		   	
 			
 					
 def main(args):
   rospy.init_node('Controller_Service')
-  Controller = ServiceOne()
+  Controller = ControllerService()
   try:
     rospy.spin()
   except KeyboardInterrupt:

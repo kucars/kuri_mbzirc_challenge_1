@@ -15,20 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 unset(OpenCV_CONFIG_PATH CACHE)
 unset(OpenCV_DIR CACHE)
+#set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} <your path> )
+#set(CUSTOM_OPENCV_DIR "/usr")
 
-set(CUSTOM_OPENCV_DIR "/usr/local")
+find_package(OpenCV 2 REQUIRED)
 
-# Few differences when dealing with ros-indigo and ros-kinetic
-#set( ROS_DISTRO $ENV{ROS_DISTRO} )
-#if( ${ROS_DISTRO} STREQUAL "indigo" )
-#    find_package(OpenCV 2.4.8 REQUIRED PATHS ${CUSTOM_OPENCV_DIR} NO_DEFAULT_PATH)
-#elseif(${ROS_DISTRO} STREQUAL "kinetic")
-#    find_package(OpenCV 2 REQUIRED)
-#else()
-#    message("Unsupported ROS Distro")
-#endif()
-
-find_package(OpenCV 2.4.8 REQUIRED)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -68,6 +59,7 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 #############
@@ -76,8 +68,7 @@ include_directories(
 
 add_executable(visp-tracker src/visptracker.cpp src/mark_tracker.cpp src/detector/landing_mark_detection.cpp src/simplemotionfilter.cpp)
 add_dependencies(visp-tracker kuri_mbzirc_challenge_1_marker_tracking_generate_messages_cpp)
-target_link_libraries(visp-tracker ${catkin_LIBRARIES})
-target_link_libraries(visp-tracker ${OpenCV_LIBRARIES})
+target_link_libraries(visp-tracker ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
   
 
 #############
