@@ -26,6 +26,9 @@ class DetectLandingMark {
 		landing_mark get_landing_mark() {
 			return a;
 		}
+		
+		void getRectCoords(double out[8]);
+		
 		DetectLandingMark(void){
 			a.x = -1;
 			a.y = -1;
@@ -36,6 +39,7 @@ class DetectLandingMark {
 		}
 	private:
 		landing_mark a;
+		double rectCoords[8];
 };
 
 #endif
