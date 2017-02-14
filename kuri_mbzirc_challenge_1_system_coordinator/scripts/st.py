@@ -50,7 +50,7 @@ class initialization(smach.State):
 # define state : marker_detection
 class marker_detection(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['Tracked'],output_keys=['srvtype','wayPointX','wayPointY','wayPointZ','LDFlag'])
+        smach.State.__init__(self, outcomes=['Tracked','explore'],output_keys=['srvtype','wayPointX','wayPointY','wayPointZ','LDFlag'])
 	# name of the topics that I wanted to use 
         #visptracker_data'
 	#/ch1/marker_bb
@@ -174,6 +174,7 @@ class marker_detection(smach.State):
 		     self.TrackedForFirstTime = False      
 		     print "4- Moving to start point"
 		     self.count = 0 
+		     return 'explore'
 		else: 
 		  userdata.srvtype = 2
 		  userdata.wayPointX = self.px
@@ -238,7 +239,7 @@ class Challenge1():
 	 	# MArker Detection and tracking 	    # in this state the drone will not perform RTL becuase it is build it to hover 
 	 	############################################3
 		smach.StateMachine.add('MARKER_DETECTION', marker_detection(),
-                                transitions={'Tracked':'LANDING'})
+                                transitions={'Tracked':'LANDING','explore':'EXPLORATION'})
 
 
 	 	############################################3
