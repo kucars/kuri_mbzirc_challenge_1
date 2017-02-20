@@ -1,0 +1,41 @@
+V1
+# This file is used to describe to VISP what the marker looks like.
+# VISP then uses this to initialize its model-based edge tracking.
+# This format (cao) is specific to VISP and is hand-written. For more information check:
+# http://visp-doc.inria.fr/doxygen/visp-3.0.0/tutorial-tracking-mb.html#mb_model
+# http://visp-doc.inria.fr/doxygen/visp-3.0.0/tutorial-tracking-mb.html#mb_advanced
+# Note: VISP is right handed, so arrange everything in counter-clockwise so that everything
+#       faces the camera. Just be consistent I guess...
+# 3D Points (using millimeters for units, but in actuality it doesn't matter I think. Just be consistent)
+# +X is right of screen
+# +Y is up of screen
+# +Z is outward from screen
+11 # 4 points for box + 3 points for circle + 4 points for X. Assume Z axis at 0 for all points
+75   75   0 # bounding box
+-75  75   0
+-75  -75  0
+75   -75  0
+0    0    0 # center (of circle and box)
+60   0    0 # first point of circle
+0    60   0 # second point of the circle
+-32  32   0 # First line of X
+32   -32  0
+32   32   0 # Second line of X
+-32  -32   0
+# 3D Lines
+6 # 4 lines for box + 2 lines for X
+0    1
+1    2
+2    3
+3    0
+7    8
+9    10
+# 3D Faces
+1 # One Face
+4    0    1    2    3
+0 # "polygon points" (not sure what this is)
+# 3D Cylinders
+0 # no cylinders
+# 3D Circles
+1 # one circle
+60   4    5    6

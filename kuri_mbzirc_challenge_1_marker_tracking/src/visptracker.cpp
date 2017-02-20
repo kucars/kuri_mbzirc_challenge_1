@@ -19,11 +19,22 @@
 #include "detector/landing_mark_detection.h"
 
 #include "mark_tracker.h"
+#include "mbtracker.h"
 
 #include <time.h>
 
+// This ugly code is the reason why people should use inheritence. Sorry for being lazy :(
+#define TRACKER_TEMPLATE	1
+#define TRACKER_MODELBASED	2
+#define TRACKER_TYPE		TRACKER_MODELBASED
+
 ros::Publisher roiPub;
+
+#if TRACKER_TYPE == TRACKER_TEMPLATE
 TrackLandingMark * detectorTracker;
+#elif TRACKER_TYPE == TRACKER_MODELBASED
+TrackMarkerModel * detectorTracker;
+#endif
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
@@ -84,16 +95,29 @@ int main(int argc, char ** argv)
   ROS_INFO("Reading parameters...");
   readParams(camSizeX, camSizeY, trackerType, camTopic, pubTopic);
   ROS_INFO("Parameters loaded successfully!");
-  
-  detectorTracker = new TrackLandingMark(camSizeX, camSizeY, (TrackerType)trackerType);
-  
-  ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
-  roiPub = n.advertise<sensor_msgs::RegionOfInterest>(pubTopic, 1000);
+#if TRACKER_TYPE == TRACKER_MODELBASED
+  detectorTracker = new TrackMarkerModel(camSizeX, camSizeY);
+  detectorTracker->setMaskSize(5);
+  detectorTracker->setMaskNumber(180);
+  detectorTracker->setRange(16);
+  detectorTracker->setThreshold(10000);
+  detectorTracker->setMu1(0.5);
+  detectorTracker->setMu2(0.5);
+  detectorTracker->setSampleStep(4);
 
+#elif TRACKER_TYPE == TRACKER_TEMPLATE
+  detectorTracker = new TrackLandingMark(camSizeX, camSizeY, (TrackerType)trackerType);
   detectorTracker->setSampling(4, 4);
   detectorTracker->setLambda(0.001);
   detectorTracker->setIterationMax(50);
   detectorTracker->setPyramidal(4, 2);
+
+#else
+#error "TRACKER_TYPE must be set properly"
+#endif
+
+  ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
+  roiPub = n.advertise<sensor_msgs::RegionOfInterest>(pubTopic, 1000);
 
   detectorTracker->enableTrackerDisplay(true);
   
