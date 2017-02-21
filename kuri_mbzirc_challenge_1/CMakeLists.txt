@@ -28,7 +28,7 @@ catkin_package(
     CATKIN_DEPENDS message_runtime message_generation
 )
 
-set(CUSTOM_OPENCV_DIR "/usr/local")
+#set(CUSTOM_OPENCV_DIR "/usr/local")
 
 find_package(Eigen REQUIRED)
 find_package(PCL REQUIRED)
@@ -37,7 +37,7 @@ find_package(kuri_mbzirc_challenge_1_msgs REQUIRED)
 
 include_directories( include
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
+#  ${OpenCV_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS})
 #############
