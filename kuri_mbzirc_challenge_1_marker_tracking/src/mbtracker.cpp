@@ -1,6 +1,7 @@
 #include "mbtracker.h"
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <visp/vpRect.h>
 
 TrackMarkerModel::~TrackMarkerModel()
 {
@@ -109,14 +110,69 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  tracker->display(I, cMo, cam, vpColor::red, 2, true);	
 	  
 	  //TODO do more things.. publish to topic...
+	  vpMbHiddenFaces<vpMbtPolygon> &faces = tracker->getFaces();
+//	  std::cout << "Number of faces: " << faces.size() << std::endl;
 
+	  // below code taken from VISP tutorial, used for reference
+/*	  for(int i = 0; i < faces.size(); i++){
+		std::vector<vpMbtPolygon *> &poly = faces.getPolygon();
+		std::cout << "face " << i << " with index: " << poly[i]->getIndex()
+		<< " is " << (poly[i]->isVisible() ? "visible" : "not visible")
+		<< " and has " << poly[i]->getNbPoint() << " points"
+		<< " and LOD is " << (poly[i]->useLod ? "enabled" : "disabled") << std::endl;
+
+		for(int j = 0; j < poly[i]->getNbPoint(); j++) {
+		  vpPoint P = poly[i]->getPoint(j);
+		  P.project(cMo);
+		  std::cout << " P obj " << j << ": " << P.get_oX() << " " << P.get_oY() << " " << P.get_oZ() << std::endl;
+		  std::cout << " P cam " << j << ": " << P.get_X() << " " << P.get_Y() << " " << P.get_Z() << std::endl;
+
+		  vpImagePoint iP;
+		  vpMeterPixelConversion::convertPoint(cam, P.get_x(), P.get_y(), iP);
+		  std::cout << " iP " << j << ": " << iP.get_u() << " " << iP.get_v() << std::endl;
+		}
+		*/
+
+	  if(faces.size() >= 1){
+		// first face is the square, get the 4 points and get pixel coordinates
+		std::vector<vpMbtPolygon *> &poly = faces.getPolygon();
+		if(poly[0]->getNbPoint() == 5){
+			// This is the face we want (yes it has 5 points, but the last one is the same as the first)
+		  std::vector<vpImagePoint> boxpoints(4);
+		  for(int i = 0; i < 4; i++)
+		  {
+			vpPoint P = poly[0]->getPoint(i);
+			P.project(cMo);
+			vpImagePoint ip;
+			vpMeterPixelConversion::convertPoint(cam, P.get_x(), P.get_y(), ip);
+			boxpoints[i] = ip;
+		  }
+		  vpRect rect = vpRect(boxpoints);
+		  roi.x_offset = rect.getLeft();
+		  roi.y_offset = rect.getTop();
+		  roi.width = rect.getWidth();
+		  roi.height = rect.getHeight();
+		  roi.do_rectify = true;
+		}else{
+		  ROS_WARN("We're tracking the model, but we can't find a face with 5 points.. this shouldn't happen..");
+		}
+	 }else{
+	   ROS_WARN("We're tracking the model, but couldn't find any faces. This shuoldn't happen!");
+	 }
 	}catch(vpException e){
 	  ROS_WARN("An exception occurred while tracking...");
 	  ROS_WARN("vpException: %s", e.getMessage());
 	  reset();
 	}
   }
-  
+
+  // draw the bounding box (debug)
+  if(trackingState)
+  {
+	vpDisplay::displayRectangle(I, vpImagePoint(roi.y_offset, roi.x_offset), roi.width, roi.height, vpColor::green,
+	  false, 3);
+  }
+
   if(displayEnabled)
 	vpDisplay::flush(I);
   
@@ -144,8 +200,7 @@ bool TrackMarkerModel::isTracking() { return trackingState; }
 
 sensor_msgs::RegionOfInterest TrackMarkerModel::getRegionOfInterest()
 {
-  //TODO implement this
-  return sensor_msgs::RegionOfInterest();
+  return roi;
 }
 
 void TrackMarkerModel::enableTrackerDisplay(bool enabled){ displayEnabled = enabled; }

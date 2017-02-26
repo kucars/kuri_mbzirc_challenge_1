@@ -53,6 +53,8 @@ private:
   bool detectedState;
   bool trackingState;
   bool displayEnabled;
+
+  sensor_msgs::RegionOfInterest roi;
   
   vpImage<unsigned char> I;
   vpDisplayX * display;

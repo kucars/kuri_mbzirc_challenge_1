@@ -100,7 +100,7 @@ int main(int argc, char ** argv)
 	TrackMarkerModel * tmm = new TrackMarkerModel(camSizeX, camSizeY);
 	tmm->setMaskSize(5);
 	tmm->setMaskNumber(180);
-	tmm->setRange(10);
+	tmm->setRange(8);
 	tmm->setThreshold(10000);
 	tmm->setMu1(0.5);
 	tmm->setMu2(0.5);
