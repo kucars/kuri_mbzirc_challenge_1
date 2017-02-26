@@ -2,9 +2,8 @@
 #define VISP_MB_TRACKER_H
 
 #include <visp/vpDisplayX.h>
-//#include <visp/
 #include <visp/vpMbEdgeTracker.h>
-
+#include "detectortracker.h"
 #include "detector/landing_mark_detection.h"
 #include "visp_bridge/image.h"
 #include "sensor_msgs/RegionOfInterest.h"
@@ -14,7 +13,7 @@
  * This class represents a model-based tracker using the VISP framework	
  */
 
-class TrackMarkerModel
+class TrackMarkerModel : public DetectorTracker
 {
 public:
   TrackMarkerModel();
@@ -29,7 +28,7 @@ public:
   void reset();
   
   // get methods
-  bool markerDetected();
+  bool markDetected();
   bool isTracking();
   sensor_msgs::RegionOfInterest getRegionOfInterest();
   

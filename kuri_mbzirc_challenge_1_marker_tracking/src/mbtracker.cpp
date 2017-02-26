@@ -109,6 +109,7 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  tracker->display(I, cMo, cam, vpColor::red, 2, true);	
 	  
 	  //TODO do more things.. publish to topic...
+
 	}catch(vpException e){
 	  ROS_WARN("An exception occurred while tracking...");
 	  ROS_WARN("vpException: %s", e.getMessage());
@@ -137,7 +138,7 @@ void TrackMarkerModel::setCameraParameters(double px, double py, double u0, doub
 }
 
 
-bool TrackMarkerModel::markerDetected(){ return detectedState; }
+bool TrackMarkerModel::markDetected(){ return detectedState; }
 
 bool TrackMarkerModel::isTracking() { return trackingState; }
 

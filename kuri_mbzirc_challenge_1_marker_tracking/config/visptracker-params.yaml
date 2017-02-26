@@ -1,6 +1,7 @@
 visptracker:
   cam_resolution_x: 1228
   cam_resolution_y: 1027
+  use_mbt: true
   tracker_type: 1
   cam_topic: '/image_raw'
   pub_topic: 'visptracker_data'
