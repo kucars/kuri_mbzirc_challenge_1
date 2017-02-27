@@ -28,8 +28,8 @@ source ~/.bashrc
 sudo apt-get install python-rosinstall -y
 
 # Update udev rules
-sudo echo "SUBSYSTEMS==\"usb\", KERNEL==\"ttyUSB[0-9]*\", ATTRS{idVendor}==\"0403\", ATTRS{idProduct}==\"6014\", SYMLINK+=\"piksi\", MODE=\"0666\", GROUP=\"dialout\"" >> /etc/udev/rules.d/70-mbzirc_drone.rules
-
+sudo echo "SUBSYSTEMS==\"usb\", KERNEL==\"ttyUSB[0-9]*\", ATTRS{idVendor}==\"0403\", ATTRS{idProduct}==\"6014\", SYMLINK+=\"piksi\", MODE=\"0666\", GROUP=\"dialout\"" > /etc/udev/rules.d/70-mbzirc_drone.rules
+sudo echo "SUBSYSTEM==\"tty\", ATTRS{idVendor}==\"0403\", ATTRS{idProduct}==\"6001\", SYMLINK+=\"px4\", MODE=\"666\""  >> /etc/udev/rules.d/70-mbzirc_drone.rules 
 echo "System Configurations Complete"
 
 # Create workspace
