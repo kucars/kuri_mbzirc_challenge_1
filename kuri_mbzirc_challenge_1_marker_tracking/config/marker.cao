@@ -18,10 +18,10 @@ V1
 0    0    0 # center (of circle and box)
 50   0    0 # first point of circle
 0    50   0 # second point of the circle
--32  32   0 # First line of X
-32   -32  0
-32   32   0 # Second line of X
--32  -32   0
+-16  16   0 # First line of X
+16   -16  0
+16   16   0 # Second line of X
+-16  -16   0
 # 3D Lines
 6 # 4 lines for box + 2 lines for X
 0    1
