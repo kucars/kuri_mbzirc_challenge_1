@@ -144,9 +144,7 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	}catch(vpTrackingException e)
 	{
 	  ROS_INFO("An exception occurred.. cancelling tracking.");
-	  tracker->resetTracker();
-	  trackingState = false;
-	  detectedState = false;
+	  reset();
 	}
   }else{
 	//trackerData.confidence /= 2.0f; // half the confidence level every step we don't track
@@ -167,6 +165,13 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
   double sum = vb + detect + init + track + display;
   ROS_INFO("Times: %f, %f, %f, %f, %f; Total: %f", vb, detect, init, track, display, sum);
 #endif
+}
+
+void TrackLandingMark::reset()
+{
+  tracker->resetTracker();
+  trackingState = false;
+  detectedState = false;
 }
 
 // get methods

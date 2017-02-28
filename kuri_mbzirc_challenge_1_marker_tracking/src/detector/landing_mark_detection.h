@@ -19,13 +19,18 @@ struct landing_mark{
 	double width, height, center_x, center_y;			//width, height of the rectangle, and the center of the landing mark
 };
 
+struct marker_circle{
+  double x, y;
+  double radius;
+};
+
 class DetectLandingMark {
 	public:
 		bool detect(const sensor_msgs::Image::ConstPtr& msg); // adapter function
 		bool detect(Mat, int);
-		landing_mark get_landing_mark() {
-			return a;
-		}
+		landing_mark get_landing_mark() { return a; }
+		marker_circle get_marker_circle() { return c; }
+		
 		
 		void getRectCoords(double out[8]);
 		
@@ -40,6 +45,7 @@ class DetectLandingMark {
 	private:
 		landing_mark a;
 		double rectCoords[8];
+		marker_circle c;
 };
 
 #endif

@@ -20,7 +20,7 @@
 -->
   <group if="$(arg goto)" >
     <rosparam command="load" file="$(find kuri_mbzirc_challenge_1_marker_tracking)/config/visptracker-params.yaml" />
-    <node pkg="kuri_mbzirc_challenge_1_marker_tracking" type="visp-tracker" name="visptracker" output="screen"/>
+    <node launch-prefix="xterm -e gdb -ex run --args" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="visp-tracker" name="visptracker" output="screen"/>
   </group>
 <!--
   <group unless="$(arg headless)" >

@@ -18,12 +18,15 @@
 
 #include "detector/landing_mark_detection.h"
 
+#include "detectortracker.h"
 #include "mark_tracker.h"
+#include "mbtracker.h"
 
 #include <time.h>
 
 ros::Publisher roiPub;
-TrackLandingMark * detectorTracker;
+
+DetectorTracker * detectorTracker;
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
@@ -38,7 +41,8 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 }
 
 // Reads params, or sets default parameters if parameters are not found
-void readParams(int& camSizeX, int& camSizeY, int& trackerType, std::string& camTopic, std::string& pubTopic)
+void readParams(int& camSizeX, int& camSizeY, bool& use_mbt, int& trackerType,
+				std::string& camTopic, std::string& pubTopic)
 {
   if(!(ros::param::get("/visptracker/cam_resolution_x", camSizeX) && 
 	 ros::param::get("/visptracker/cam_resolution_y", camSizeY)))
@@ -49,6 +53,13 @@ void readParams(int& camSizeX, int& camSizeY, int& trackerType, std::string& cam
   }
   ROS_INFO("Set camera resolution to %d %d", camSizeX, camSizeY);
   
+  if(!ros::param::get("/visptracker/use_mbt", use_mbt))
+  {
+	ROS_WARN("Cannot read use_mbt parameter.");
+	use_mbt = true;
+  }
+  ROS_INFO("Tracker will %s use model-based tracking", (use_mbt ? "" : "NOT"));
+
   if(ros::param::get("/visptracker/tracker_type", trackerType) && (trackerType < 0 || trackerType > 5))
   {
 	ROS_WARN("Cannot read valid tracker type parameter");
@@ -56,7 +67,6 @@ void readParams(int& camSizeX, int& camSizeY, int& trackerType, std::string& cam
   }
   ROS_INFO("Set tracker type to %d", trackerType);
 
-  
   if(!ros::param::get("/visptracker/cam_topic", camTopic))
   {
 	ROS_WARN("Cannot get cam_topic string parameter");
@@ -79,21 +89,34 @@ int main(int argc, char ** argv)
   ros::NodeHandle n;
   
   // read parameters first
+  bool use_mbt;
   int camSizeX, camSizeY, trackerType;
   std::string camTopic, pubTopic;
   ROS_INFO("Reading parameters...");
-  readParams(camSizeX, camSizeY, trackerType, camTopic, pubTopic);
+  readParams(camSizeX, camSizeY, use_mbt, trackerType, camTopic, pubTopic);
   ROS_INFO("Parameters loaded successfully!");
-  
-  detectorTracker = new TrackLandingMark(camSizeX, camSizeY, (TrackerType)trackerType);
-  
+
+  if(use_mbt){
+	TrackMarkerModel * tmm = new TrackMarkerModel(camSizeX, camSizeY);
+	tmm->setMaskSize(5);
+	tmm->setMaskNumber(180);
+	tmm->setRange(30);
+	tmm->setThreshold(30000);
+	tmm->setMu1(0.5);
+	tmm->setMu2(0.5);
+	tmm->setSampleStep(4);
+	detectorTracker = tmm;
+  }else{
+	TrackLandingMark * tlm = new TrackLandingMark(camSizeX, camSizeY, (TrackerType)trackerType);
+	tlm->setSampling(4, 4);
+	tlm->setLambda(0.001);
+	tlm->setIterationMax(50);
+	tlm->setPyramidal(4, 2);
+	detectorTracker = tlm;
+  }
+
   ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
   roiPub = n.advertise<sensor_msgs::RegionOfInterest>(pubTopic, 1000);
-
-  detectorTracker->setSampling(4, 4);
-  detectorTracker->setLambda(0.001);
-  detectorTracker->setIterationMax(50);
-  detectorTracker->setPyramidal(4, 2);
 
   detectorTracker->enableTrackerDisplay(true);
   

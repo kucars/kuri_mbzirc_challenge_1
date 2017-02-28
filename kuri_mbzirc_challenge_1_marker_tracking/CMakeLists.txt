@@ -7,6 +7,7 @@ project(kuri_mbzirc_challenge_1_marker_tracking)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  roslib
   std_msgs
   sensor_msgs
   visp_bridge
@@ -66,10 +67,9 @@ include_directories(
 ## Install ##
 #############
 
-add_executable(visp-tracker src/visptracker.cpp src/mark_tracker.cpp src/detector/landing_mark_detection.cpp )
+add_executable(visp-tracker src/visptracker.cpp src/mark_tracker.cpp src/detector/landing_mark_detection.cpp src/mbtracker.cpp)
 add_dependencies(visp-tracker kuri_mbzirc_challenge_1_marker_tracking_generate_messages_cpp)
 target_link_libraries(visp-tracker ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
-  
 
 #############
 ## Testing ##

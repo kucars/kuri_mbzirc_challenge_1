@@ -4,9 +4,11 @@
 #include <visp/vpDisplayX.h>
 #include <visp/vpTemplateTracker.h>
 #include <visp/vpTemplateTrackerWarpHomography.h>
+#include "detectortracker.h"
 #include "detector/landing_mark_detection.h"
 #include "visp_bridge/image.h"
 #include "sensor_msgs/RegionOfInterest.h"
+
 
 enum TrackerType 
 {
@@ -18,7 +20,7 @@ enum TrackerType
   ZNCCInverseCompositional,
 };
 
-class TrackLandingMark
+class TrackLandingMark : public DetectorTracker
 {
 public:
   TrackLandingMark();

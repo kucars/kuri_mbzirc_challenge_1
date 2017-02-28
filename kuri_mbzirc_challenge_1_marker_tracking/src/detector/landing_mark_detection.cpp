@@ -56,11 +56,11 @@ bool DetectLandingMark::detect(Mat frame, int show_result=0) {
 		approxPolyDP(contours[i], approx, 0.01 * peri, true);
 		//ensure that the approximated contour is "roughly" rectangular
 		if(approx.size()>=4 && approx.size()<=6){	
-			
+/*
 			for(int k=0; k<approx.size(); k++){
 				ROS_INFO("k=%d -----> x=%d, y=%d",k,approx[k].x,approx[k].y);
 			}
-			
+*/
 			Rect rect = boundingRect(approx);
 			float aspectRatio = rect.width / float(rect.height);
 			
@@ -97,13 +97,7 @@ bool DetectLandingMark::detect(Mat frame, int show_result=0) {
 					if(average_x-(int(circles[max_r_index][0])+rect.x)<=20){
 						status = "Target Detected";
 						status_flag = 1;
-						//start drawing if requested
-						if(show_result){
-							drawContours(frame, contours, i, (0, 0, 255), 4);
-							circle(frame, Point(int(circles[max_r_index][0])+rect.x, int(circles[max_r_index][1])+rect.y), circles[max_r_index][2], Scalar(0, 255, 0), 4);
-							rectangle(frame, Point(average_x - 5, average_y - 5), Point(average_x + 5, average_y + 5), Scalar(0, 128, 255), -1);
-							putText(frame, status, Point(20, 30), CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(100, 120, 0), 2);
-						}
+						
 						//assign values to the landing_mark struct
 						a.x = rect.x;
 						a.y = rect.y;
@@ -115,6 +109,14 @@ bool DetectLandingMark::detect(Mat frame, int show_result=0) {
 						for(int k=0; k<approx.size(); k++){
 							rectCoords[k*2] = approx[k].x;
 							rectCoords[k*2 + 1] = approx[k].y;
+						}
+						
+						//start drawing if requested
+						if(show_result){
+							drawContours(frame, contours, i, (0, 0, 255), 4);
+							circle(frame, Point(int(circles[max_r_index][0])+rect.x, int(circles[max_r_index][1])+rect.y), circles[max_r_index][2], Scalar(0, 255, 0), 4);
+							rectangle(frame, Point(average_x - 5, average_y - 5), Point(average_x + 5, average_y + 5), Scalar(0, 128, 255), -1);
+							putText(frame, status, Point(20, 30), CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(100, 120, 0), 2);
 						}
 					}
 				}
