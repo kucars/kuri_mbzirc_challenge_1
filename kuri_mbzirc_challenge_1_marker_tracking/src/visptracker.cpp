@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Header.h"
 #include "sensor_msgs/Image.h"
+#include "geometry_msgs/Pose.h"
 
 #include "visp_bridge/image.h"
 #include <visp/vpImageIo.h>
@@ -25,8 +26,11 @@
 #include <time.h>
 
 ros::Publisher roiPub;
+ros::Publisher posePub;
 
 DetectorTracker * detectorTracker;
+
+bool use_mbt;
 
 void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
@@ -38,11 +42,13 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   //ROS_INFO("detectorTracker took %f seconds", ((float)(end - start))/CLOCKS_PER_SEC);
   sensor_msgs::RegionOfInterest data = detectorTracker->getRegionOfInterest();
   roiPub.publish(data);
+  if(use_mbt)
+	posePub.publish(dynamic_cast<TrackMarkerModel*>(detectorTracker)->getPoseStamped());
 }
 
 // Reads params, or sets default parameters if parameters are not found
 void readParams(int& camSizeX, int& camSizeY, bool& use_mbt, int& trackerType,
-				std::string& camTopic, std::string& pubTopic)
+				std::string& camTopic, std::string& pubTopic, std::string& poseTopic)
 {
   if(!(ros::param::get("/visptracker/cam_resolution_x", camSizeX) && 
 	 ros::param::get("/visptracker/cam_resolution_y", camSizeY)))
@@ -81,6 +87,13 @@ void readParams(int& camSizeX, int& camSizeY, bool& use_mbt, int& trackerType,
 	pubTopic = "visptracker_data";
   }
   ROS_INFO("Set publisher topic name as %s", pubTopic.c_str());
+
+  if(!ros::param::get("/visptracker/pose_topic", poseTopic))
+  {
+	ROS_WARN("Cannot get pose topic string parameter");
+	pubTopic = "visptracker_pose";
+  }
+  ROS_INFO("Set pose topic name as %s", poseTopic.c_str());
 }
 
 int main(int argc, char ** argv)
@@ -89,11 +102,10 @@ int main(int argc, char ** argv)
   ros::NodeHandle n;
   
   // read parameters first
-  bool use_mbt;
   int camSizeX, camSizeY, trackerType;
-  std::string camTopic, pubTopic;
+  std::string camTopic, pubTopic, poseTopic;
   ROS_INFO("Reading parameters...");
-  readParams(camSizeX, camSizeY, use_mbt, trackerType, camTopic, pubTopic);
+  readParams(camSizeX, camSizeY, use_mbt, trackerType, camTopic, pubTopic, poseTopic);
   ROS_INFO("Parameters loaded successfully!");
 
   if(use_mbt){
@@ -117,6 +129,7 @@ int main(int argc, char ** argv)
 
   ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
   roiPub = n.advertise<sensor_msgs::RegionOfInterest>(pubTopic, 1000);
+  posePub = n.advertise<geometry_msgs::PoseStamped>(poseTopic, 1000);
 
   detectorTracker->enableTrackerDisplay(true);
   

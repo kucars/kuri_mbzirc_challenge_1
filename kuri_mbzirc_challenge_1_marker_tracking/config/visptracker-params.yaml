@@ -5,4 +5,5 @@ visptracker:
   tracker_type: 1
   cam_topic: '/image_raw'
   pub_topic: 'visptracker_data'
+  pose_topic: 'visptracker_pose'
 
