@@ -43,7 +43,7 @@ add_service_files(
   FILES
   PES.srv
   navigation.srv
-  Mission.srv
+
 
 )
 
