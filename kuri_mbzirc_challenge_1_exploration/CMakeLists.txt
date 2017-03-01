@@ -38,10 +38,9 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(
+include_directories( include
   ${catkin_INCLUDE_DIRS}
 )
-
 
 #############
 ## Install ##
@@ -53,4 +52,10 @@ include_directories(
 ## Testing ##
 #############
 
+add_executable(takeoffA src/offboardService.cpp)
+target_link_libraries(takeoffA ${catkin_LIBRARIES})
+add_dependencies(takeoffA ${catkin_EXPORTED_TARGETS})
 
+#add_executable(takeoffA src/autotakeoff.cpp)
+#target_link_libraries(takeoffA ${catkin_LIBRARIES})
+#add_dependencies(takeoffA ${catkin_EXPORTED_TARGETS})

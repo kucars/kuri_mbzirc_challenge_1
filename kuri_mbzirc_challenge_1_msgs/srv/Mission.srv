@@ -1,0 +1,6 @@
+int32 misionType
+float64 wayPointAlt
+float64 wayPointLon
+float64 wayPointLat
+---
+bool navResponse
