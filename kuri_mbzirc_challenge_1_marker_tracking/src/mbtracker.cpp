@@ -114,7 +114,8 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 //	  std::cout << "Number of faces: " << faces.size() << std::endl;
 
 	  // below code taken from VISP tutorial, used for reference
-/*	  for(int i = 0; i < faces.size(); i++){
+	  /*
+	  for(int i = 0; i < faces.size(); i++){
 		std::vector<vpMbtPolygon *> &poly = faces.getPolygon();
 		std::cout << "face " << i << " with index: " << poly[i]->getIndex()
 		<< " is " << (poly[i]->isVisible() ? "visible" : "not visible")
@@ -131,7 +132,8 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 		  vpMeterPixelConversion::convertPoint(cam, P.get_x(), P.get_y(), iP);
 		  std::cout << " iP " << j << ": " << iP.get_u() << " " << iP.get_v() << std::endl;
 		}
-		*/
+	  }
+	  */
 
 	  if(faces.size() >= 1){
 		// first face is the square, get the 4 points and get pixel coordinates
@@ -153,6 +155,24 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 		  roi.width = rect.getWidth();
 		  roi.height = rect.getHeight();
 		  roi.do_rectify = true;
+
+		  vpTranslationVector trans;
+		  vpQuaternionVector q;
+		  cMo.extract(trans);
+		  cMo.extract(q);
+
+		  //ROS_INFO("Translation %f %f %f", trans[0], trans[1], trans[2]);
+		  //ROS_INFO("Quats: %f %f %f %f", q[0], q[1], q[2], q[3]);
+
+		  pose.header = msg->header;
+		  pose.pose.position.x = trans[0] * 0.01; // convert to meters
+		  pose.pose.position.y = trans[1] * 0.01;
+		  pose.pose.position.z = trans[2] * 0.01;
+		  pose.pose.orientation.x = q.x();
+		  pose.pose.orientation.y = q.y();
+		  pose.pose.orientation.z = q.z();
+		  pose.pose.orientation.w = q.w();
+
 		}else{
 		  ROS_WARN("We're tracking the model, but we can't find a face with 5 points.. this shouldn't happen..");
 		}
@@ -201,6 +221,11 @@ bool TrackMarkerModel::isTracking() { return trackingState; }
 sensor_msgs::RegionOfInterest TrackMarkerModel::getRegionOfInterest()
 {
   return roi;
+}
+
+geometry_msgs::PoseStamped TrackMarkerModel::getPoseStamped()
+{
+  return pose;
 }
 
 void TrackMarkerModel::enableTrackerDisplay(bool enabled){ displayEnabled = enabled; }

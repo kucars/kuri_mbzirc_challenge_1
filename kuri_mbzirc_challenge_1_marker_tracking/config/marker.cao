@@ -6,7 +6,7 @@ V1
 # http://visp-doc.inria.fr/doxygen/visp-3.0.0/tutorial-tracking-mb.html#mb_advanced
 # Note: VISP is right handed, so arrange everything in counter-clockwise so that everything
 #       faces the camera. Just be consistent I guess...
-# 3D Points (using millimeters for units, but in actuality it doesn't matter I think. Just be consistent)
+# 3D Points (using centimeters for units, but in actuality it doesn't matter I think. Just be consistent)
 # +X is right of screen
 # +Y is up of screen
 # +Z is outward from screen

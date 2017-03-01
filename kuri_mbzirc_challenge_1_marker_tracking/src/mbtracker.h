@@ -7,6 +7,7 @@
 #include "detector/landing_mark_detection.h"
 #include "visp_bridge/image.h"
 #include "sensor_msgs/RegionOfInterest.h"
+#include "geometry_msgs/PoseStamped.h"
 
 
 /**
@@ -31,7 +32,8 @@ public:
   bool markDetected();
   bool isTracking();
   sensor_msgs::RegionOfInterest getRegionOfInterest();
-  
+  geometry_msgs::PoseStamped getPoseStamped();
+
   // set methods
   void enableTrackerDisplay(bool enabled);
   void setMaskSize(int size);
@@ -55,6 +57,7 @@ private:
   bool displayEnabled;
 
   sensor_msgs::RegionOfInterest roi;
+  geometry_msgs::PoseStamped pose;
   
   vpImage<unsigned char> I;
   vpDisplayX * display;
