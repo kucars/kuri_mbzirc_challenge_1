@@ -77,12 +77,12 @@ cv::Mat P(3, 4, CV_64FC1);
 
 }*/
 
-void odomCallback(const nav_msgs::OdometryConstPtr& odom)
+/*void odomCallback(const nav_msgs::OdometryConstPtr& odom)
 {
     tf::poseMsgToTF(odom->pose.pose, tfpose);
-}
+}*/
 
-/*void odomGlobalCallback(const sensor_msgs::NavSatFixConstPtr& topic)
+void odomGlobalCallback(const sensor_msgs::NavSatFixConstPtr& topic)
 {
 
     nav_msgs::Odometry odom ; 
@@ -91,7 +91,7 @@ void odomCallback(const nav_msgs::OdometryConstPtr& odom)
     odom.pose.pose.position.z = topic->altitude;
 
     tf::poseMsgToTF(odom.pose.pose, tfpose);
-}*/
+}
 
 
 void camInfoCallback(const sensor_msgs::CameraInfoConstPtr& cam_info)
@@ -172,8 +172,8 @@ bool poseEstimationFunction(kuri_mbzirc_challenge_1_msgs::PES::Request  &req,
     float DomB = B[1][1] * B[0][0] - B[0][1] * B[1][0];
     //res.obj.pose.pose.position.x  = (B[1][1] * bvu[0] - B[0][1] * bvu[1]) / DomB ;
     //res.obj.pose.pose.position.y  = (B[0][0] * bvu[1] - B[1][0] * bvu[0]) / DomB ;
-    res.X   = (B[1][1] * bvu[0] - B[0][1] * bvu[1]) / DomB ;
-    res.Y   = (B[0][0] * bvu[1] - B[1][0] * bvu[0]) / DomB ;
+    res.X   = ((B[1][1] * bvu[0] - B[0][1] * bvu[1]) / DomB)  / 10000000 ;
+    res.Y   = ((B[0][0] * bvu[1] - B[1][0] * bvu[0]) / DomB ) / 10000000;
     res.Z = 2 ;
     //res.obj.pose.pose.position.z = 0 ;
     //ROS_INFO("request: x=%ld, y=%ld", (long int)req.A, (long int)req.B);
@@ -196,13 +196,11 @@ int main(int argc, char **argv)
     //sync.registerCallback(boost::bind(&callback, _1, _2));
 
     //ros::Subscriber odom_sub = n.subscribe("/mavros/local_position/odom", 1000, odomCallback);
-    //ros::Subscriber pose_global_sub = n.subscribe("/mavros/global_position/global", 1000, odomGlobalCallback);
-    ros::Subscriber odom_sub = n.subscribe("/mavros/global_position/local", 1000, odomCallback);
-    
+    ros::Subscriber pose_global_sub = n.subscribe("/mavros/global_position/global", 1000, odomGlobalCallback);
+    //ros::Subscriber odom_sub = n.subscribe("/mavros/global_position/local", 1000, odomCallback);
     ros::Subscriber cam_info_sub = n.subscribe("/downward_cam/camera/camera_info", 1000, camInfoCallback);
     ros::ServiceServer service = n.advertiseService("position_estimation", poseEstimationFunction);
     ROS_INFO("Ready to convert.");
     ros::spin();
-
     return 0;
 }

@@ -60,7 +60,9 @@ target_link_libraries(off_board ${catkin_LIBRARIES})
 
 #add_executable(client src/client_1.cpp)
 #target_link_libraries(client ${catkin_LIBRARIES})
-#add_dependencies(client  ${catkin_EXPORTED_TARGETS})
+#add_dependencies(client ${catkin_EXPORTED_TARGETS})
+
+
 
 
 #############
