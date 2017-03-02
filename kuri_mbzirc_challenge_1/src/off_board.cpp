@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
 
         }
-       // local_pos_pub.publish(set_pos);
+        //local_pos_pub.publish(set_pos);
 
         ros::spinOnce();
         rate.sleep();

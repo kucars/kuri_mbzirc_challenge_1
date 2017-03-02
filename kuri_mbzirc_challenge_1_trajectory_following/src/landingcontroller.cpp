@@ -16,50 +16,44 @@
 bool firstDataFlag = false ;
 double roll, pitch, yaw;
 int counter = 0 ;
+float w; // the actual yaw variable
+
 float tolerance = 0.2;//0.2; // 0.05; //0.05;
-float kp = 0.5;//7;//was 5 , new values //1//0.5//20
+float kp = 0.05;//7;//was 5 , new values //1//0.5//20
 float ki = 0;//was 0.002 >> .02//2//0.005
-float kd = 0.5;//15;//was 5 >> 15//10//2.5//1
+float kd = 0.05;//15;//was 5 >> 15//10//2.5//1
 
-float w;
-float gain = 0.01 ; 
 float error_x = 0;
-
 float error_y = 0;
 float error_z = 0;
-
 float error_w = 0;
-float prev_error_x = 0;
 
+float prev_error_x = 0;
 float prev_error_y = 0;
 float prev_error_z = 0;
-
 float prev_error_w = 0;
+
 float rise = 1;
 
 float nonstop = true;
 
 float proportional_x = 0;
 float proportional_y = 0;
-
 float proportional_z = 0;
 float proportional_w = 0;
 
 float integral_x = 0;
 float integral_y = 0;
-
 float integral_z = 0;
 float integral_w = 0;
 
 float derivative_x = 0;
 float derivative_y = 0;
-
 float derivative_z = 0;
 float derivative_w = 0;
 
 float  action_x = 0;
 float  action_y = 0;
-
 float  action_z = 0;
 float action_w = 0;
 
@@ -79,8 +73,23 @@ void mavrosStateCallback(const mavros_msgs::State::ConstPtr& msg)
 geometry_msgs::PoseStamped goalPose;
 void goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
-    //ROS_INFO_STREAM("Received Goal: (" << msg->pose.position.x <<","<< msg->pose.position.y<<","<< msg->pose.position.z<<")");
+    recievedFlag = true ;
+    // TO BE TESTED Since the way of recieveing the estimated position has been changed (it is being published from the mbtracker.cpp
+    /* tf::transformBroadcaster br ;
+    tf::Transform transform ;
+    transform.setOrigin(tf::Vector3(0,0,0)) ;
+    transform.setRotation(tf::Quaternion(x,y,z,w)) ;
+    br.sendTransform(tf::StampedTransform(transform,ros::Time::now() , "downward_cam_optical_frame", "base_link")) ;
+    */
+
+    // ********************************************************************************************************************** //
+    // The sign of the z direction has been assigned to the oppisite direction until the transformation is being tested
+    // ********************************************************************************************************************** //
+
+    // ROS_INFO_STREAM("Received Goal: (" << msg->pose.position.x <<","<< msg->pose.position.y<<","<< msg->pose.position.z<<")");
+
     goalPose = *msg ;
+
 }
 
 void headingCallback(const std_msgs::Float64::ConstPtr& msg)
@@ -98,10 +107,10 @@ void globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 
     if (firstDataFlag == false )
     {
-        error_x =  goalPose.pose.position.x - real.x;
-        error_y =  goalPose.pose.position.y - real.y;
-        error_z =  goalPose.pose.position.z - real.z ;
-        error_w = 0 - w;
+        error_x =  -goalPose.pose.position.x - real.x;
+        error_y =  -goalPose.pose.position.y - real.y;
+        error_z =  -goalPose.pose.position.z - real.z ;
+        error_w =  w;
         prev_error_x = error_x;
         prev_error_y = error_y;
         prev_error_z = error_z;
@@ -111,13 +120,13 @@ void globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
     }
     else {
 
-        error_x =  goalPose.pose.position.x - real.x;
-        error_y =  goalPose.pose.position.y - real.y;
-        error_z =  goalPose.pose.position.z - real.z ;
-        error_w = 0 - w;
-        std::cout << "Error X " <<  goalPose.pose.position.x  << "\t\t\t\t\t\t"    <<  real.x  <<  "\t\t\t\t\t\t"  << error_x <<std::endl;
-        std::cout << "Error Y " <<  goalPose.pose.position.y  << "\t\t\t\t\t"    <<  real.y  <<  "\t\t\t\t\t"   << error_y <<std::endl;
-        std::cout << "Error Z " <<  goalPose.pose.position.z  << "\t\t\t\t\t\t"    <<  real.z  <<  "\t\t\t\t\t\t"   << error_z <<std::endl;
+        error_x =  -goalPose.pose.position.x - real.x;
+        error_y =  -goalPose.pose.position.y - real.y;
+        error_z =  -goalPose.pose.position.z - real.z ;
+        error_w =  w;
+        //std::cout << "Error X " <<  -goalPose.pose.position.x  << "\t\t\t\t\t\t"    <<  real.x  <<  "\t\t\t\t\t\t"  << error_x <<std::endl;
+        //std::cout << "Error Y " <<  -goalPose.pose.position.y  << "\t\t\t\t\t"       <<  real.y  <<  "\t\t\t\t\t"   << error_y <<std::endl;
+        //std::cout << "Error Z " <<  -goalPose.pose.position.z  << "\t\t\t\t\t\t"    <<  real.z  <<  "\t\t\t\t\t\t"   << error_z <<std::endl;
 
         proportional_x = kp * error_x;
         proportional_y = kp * error_y;
@@ -165,9 +174,9 @@ void globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
         ROS_INFO("Action Z: %0.2f \n", action_z);
         ROS_INFO("Action W: %0.2f \n", action_w);
 
-        // recording data for analysis
+        // publishing this data to be recorded in a bag file
         pidmsg.dronePoseX = real.x;                       pidmsg.dronePoseY = real.y;                     pidmsg.dronePoseZ = real.z;
-        pidmsg.goalPoseX  = goalPose.pose.position.x ;    pidmsg.goalPoseY  = goalPose.pose.position.y;   pidmsg.goalPoseZ  = goalPose.pose.position.z;
+        pidmsg.goalPoseX  = -goalPose.pose.position.x ;   pidmsg.goalPoseY  = -goalPose.pose.position.y;   pidmsg.goalPoseZ  = -goalPose.pose.position.z;
         pidmsg.positionErrorX = error_x;                  pidmsg.positionErrorY = error_y;                pidmsg.positionErrorZ = error_z;                pidmsg.positionErrorW = error_w;
         pidmsg.PX = proportional_x;                       pidmsg.PY = proportional_y;                     pidmsg.PZ = proportional_z;                     pidmsg.PW = proportional_w;
         pidmsg.IX = integral_x;                           pidmsg.IY = integral_y;                         pidmsg.IZ = integral_z;                         pidmsg.IW = integral_w;
@@ -190,32 +199,22 @@ void globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 
 int main(int argc , char **argv)
 {
-    ros::init(argc , argv , "kuri_offboard_attitude_control_test");
+    ros::init(argc , argv , "offboard_attitude_control");
     ros::NodeHandle nh;
 
     ros::Publisher velPub = nh.advertise <geometry_msgs ::TwistStamped >("/mavros/setpoint_velocity/cmd_vel", 1);
     ros::Publisher pidPub = nh.advertise <kuri_mbzirc_challenge_1_msgs::pidData >("/pidData", 1);
-
-    ros::Subscriber goalSub          = nh.subscribe("/kuri_offboard_attitude_control_test/goal", 1000, goalCallback);
+    ros::Subscriber goalSub          = nh.subscribe("/visptracker_pose", 1000, goalCallback);
     ros::Subscriber pose_global_sub = nh.subscribe("/mavros/global_position/global", 1000, globalPoseCallback);
     ros::Subscriber compass_pub = nh.subscribe ("/mavros/global_position/compass_hdg", 1, headingCallback);
-
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
-
-
     mavros_msgs::CommandBool armCommand;
-
     armCommand.request.value = true;
-
     ros::Rate loopRate(10);
 
     goalPose.pose.position.x = 0;
     goalPose.pose.position.y = 0;
     goalPose.pose.position.z = 0;
-
-    ros::Time last_request    = ros::Time::now();
-    ros::Time statusUpdate    = ros::Time::now();
-    ros::Time waitingForOFF   = ros::Time::now();
 
     while (ros::ok())
     {
