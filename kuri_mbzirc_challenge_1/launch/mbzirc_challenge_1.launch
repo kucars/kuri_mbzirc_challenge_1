@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- MAVROS posix SITL environment launch script -->
+    <arg name="enable_truck_motion" default="false"/>
+    <arg name="headless" default="false"/>
+    <arg name="gui" default="true"/>
+    <arg name="debug" default="false"/>
+    <arg name="verbose" default="false"/>
+    <arg name="paused" default="false"/> 
+    <arg name="pluginlists_yaml" default="$(find mavros)/launch/px4_pluginlists.yaml" />
+    <arg name="config_yaml" default="$(find mavros)/launch/px4_config.yaml" />
+    <arg name="screen" default="screen"/>
+
+    
+    <include file="$(find kuri_mbzirc_sim)/launch/mbzirc_arena.launch" >
+        <arg name="paused" default="$(arg paused)"/>
+        <arg name="debug" default="$(arg debug)"/>
+        <arg name="gui" default="$(arg gui)"  />
+        <arg name="world_name" default="$(find kuri_mbzirc_sim)/gazebo_models/world/mbzirc_arena_task_1.world"/>
+        <arg name="headless" default="$(arg headless)"/>
+    </include>
+
+    <param name="truck/robot_description" command="$(find xacro)/xacro '$(find kuri_mbzirc_sim)/urdf/truck_panel.urdf.xacro'
+        enable_motion:=$(arg enable_truck_motion)
+    " />
+
+    <group ns="truck/ground_truth">
+        <node name="spawn_robot" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+            args=" -urdf -model truck -param /truck/robot_description" />
+    </group>
+
+      <!-- UAV 1 - IRIS 1 -->
+
+    <!--group ns="uav_1"-->
+    <arg name="name" default="uav_1"/>
+    <arg name="ns" default="/uav_1/"/>
+    <arg name="fcu_url" default="udp://:14556@localhost:14557"/>
+    <arg name="vehicle" default="iris1"/>
+    <!--arg name="rcS" default="$(find kuri_mbzirc_sim)/config/$(arg vehicle)"/-->
+    <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/lpe/$(arg vehicle)"/>
+    <!--arg name="sdf" default="$(find kuri_mbzirc_sim)/urdf/iris/$(arg vehicle)_with_sensors.sdf"/-->
+    <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/iris/iris.sdf"/>
+    
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    <arg name="R" default="0"/>
+    <arg name="P" default="0"/>
+    <arg name="Y" default="0"/>
+    
+    <node name="$(anon vehicle_spawn)" output="$(arg screen)" pkg="gazebo_ros" type="spawn_model"
+        args="-sdf -file $(arg sdf) -model $(arg name) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
+	
+    <node name="sitl" pkg="px4" type="px4" output="$(arg screen)"
+        args="$(find px4) $(arg rcS)">
+    </node>
+
+    <include file="$(find px4)/launch/mavros.launch">
+        <arg name="ns" value="$(arg ns)"/>
+        <arg name="gcs_url" value=""/> 
+        <arg name="fcu_url" value="$(arg fcu_url)"/>
+        <arg name="pluginlists_yaml" value="$(arg pluginlists_yaml)" />
+        <arg name="config_yaml" value="$(arg config_yaml)" />
+    </include>    
+    
+    <rosparam file="$(find kuri_mbzirc_challenge_1)/config/controller.yaml"/>
+</launch>
+    
