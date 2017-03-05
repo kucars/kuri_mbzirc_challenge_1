@@ -35,15 +35,15 @@
 
     <!--group ns="uav_1"-->
     <arg name="name" default="uav_1"/>
-    <arg name="ns" default="/uav_1/"/>
+    <arg name="ns" default="/"/>
     <arg name="fcu_url" default="udp://:14556@localhost:14557"/>
-    <arg name="vehicle" default="iris1"/>
+    <arg name="vehicle" default="iris"/>
     <!--arg name="rcS" default="$(find kuri_mbzirc_sim)/config/$(arg vehicle)"/-->
     <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/lpe/$(arg vehicle)"/>
-    <!--arg name="sdf" default="$(find kuri_mbzirc_sim)/urdf/iris/$(arg vehicle)_with_sensors.sdf"/-->
-    <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/iris/iris.sdf"/>
+    <arg name="sdf" default="$(find kuri_mbzirc_sim)/urdf/iris/$(arg vehicle)_with_sensors.sdf"/>
+    <!--arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/iris/iris.sdf"/-->
     
-    <arg name="x" default="0"/>
+    <arg name="x" default="24"/>
     <arg name="y" default="0"/>
     <arg name="z" default="0"/>
     <arg name="R" default="0"/>
@@ -66,5 +66,20 @@
     </include>    
     
     <rosparam file="$(find kuri_mbzirc_challenge_1)/config/controller.yaml"/>
+    <rosparam file="$(find kuri_mbzirc_challenge_1_system_coordinator)/config/state_machine.yaml"/>
+
+    
+    
+    <param name="robot_description" textfile="$(find kuri_mbzirc_sim)/urdf/$(arg vehicle)/iris_with_sensors.urdf"/>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+      
+      
+      
+    <include file="$(find kuri_mbzirc_challenge_1_marker_tracking)/launch/task.launch" ></include>
+    <node name="off_board" pkg="kuri_mbzirc_challenge_1" type="off_board" ></node>
+    <node name="service_Controller" pkg="kuri_mbzirc_challenge_1" type="service_controller_2.py" ></node>
+    <node name="land" pkg="kuri_mbzirc_challenge_1_trajectory_following" type="landing_control" > </node> 
+    <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="state_machine.py" output="screen"/> 
 </launch>
     

@@ -10,9 +10,13 @@
 #include "kuri_mbzirc_challenge_1_trajectory_following/landingcontroller.h"
 #include <std_msgs/Float64.h>
 
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
+#include <tf_conversions/tf_eigen.h>
+#include <tf/transform_datatypes.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <nav_msgs/Odometry.h>
-#include <tf/transform_datatypes.h>
 
 TruckFollower::TruckFollower(const ros::NodeHandle &_nh, const ros::NodeHandle &_nhPrivate):
   nh(_nh),
@@ -20,11 +24,9 @@ TruckFollower::TruckFollower(const ros::NodeHandle &_nh, const ros::NodeHandle &
 {
   velPub           = nh.advertise <geometry_msgs ::TwistStamped >("/mavros/setpoint_velocity/cmd_vel", 1);
   pidPub           = nh.advertise <kuri_mbzirc_challenge_1_msgs::pidData >("/pidData", 1);
-  goalSub          = nh.subscribe("/visptracker_pose", 1000, &TruckFollower::goalCallback,this);
+  goalSub          = nh.subscribe("/visptracker_pose_tunnel", 1000, &TruckFollower::goalCallback,this);
   globalPoseSub  = nh.subscribe("/mavros/global_position/global", 1000, &TruckFollower::globalPoseCallback,this);
   compassSub      = nh.subscribe ("/mavros/global_position/compass_hdg", 1, &TruckFollower::headingCallback,this);
-  armingClient = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
-  armCommand.request.value = true;
 
   nh.param("kp", kp, 0.05);
   nh.param("ki", ki, 0.0);
@@ -46,7 +48,7 @@ TruckFollower::TruckFollower(const ros::NodeHandle &_nh, const ros::NodeHandle &
     if(ros::Time::now() - goalLastReceived > ros::Duration(0.5))
     {
       stopTwist.header.stamp = ros::Time::now();
-      velPub.publish(stopTwist);
+      //velPub.publish(stopTwist);
     }
     else
     {
@@ -66,22 +68,8 @@ void TruckFollower::mavrosStateCallback(const mavros_msgs::State::ConstPtr& msg)
 void TruckFollower::goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
   goalLastReceived = ros::Time::now();
-  ROS_INFO("TEST");
-  // TO BE TESTED Since the way of recieveing the estimated position has been changed (it is being published from the mbtracker.cpp
-  /* tf::transformBroadcaster br ;
-      tf::Transform transform ;
-      transform.setOrigin(tf::Vector3(0,0,0)) ;
-      transform.setRotation(tf::Quaternion(x,y,z,w)) ;
-      br.sendTransform(tf::StampedTransform(transform,ros::Time::now() , "downward_cam_optical_frame", "base_link")) ;
-      */
-
-  // ********************************************************************************************************************** //
-  // The sign of the z direction has been assigned to the oppisite direction until the transformation is being tested
-  // ********************************************************************************************************************** //
-
-  // ROS_INFO_STREAM("Received Goal: (" << msg->pose.position.x <<","<< msg->pose.position.y<<","<< msg->pose.position.z<<")");
-
-  goalPose = *msg ;
+  ROS_INFO("TEST"); // this should be done before sending it to this component
+  goalPose = *msg;
 
 }
 
@@ -99,9 +87,9 @@ void TruckFollower::globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& m
 
   if (firstDataFlag == false )
   {
-    errorX =  -goalPose.pose.position.x - real.x;
-    errorY =  -goalPose.pose.position.y - real.y;
-    errorZ =  -goalPose.pose.position.z - real.z ;
+    errorX =  goalPose.pose.position.x - real.x;
+    errorY =  goalPose.pose.position.y - real.y;
+    errorZ =  goalPose.pose.position.z - real.z ;
     errorW =  w;
     prevErrorX = errorX;
     prevErrorY = errorY;
@@ -112,9 +100,9 @@ void TruckFollower::globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& m
   else
   {
 
-    errorX =  -goalPose.pose.position.x - real.x;
-    errorY =  -goalPose.pose.position.y - real.y;
-    errorZ =  -goalPose.pose.position.z - real.z ;
+    errorX =  goalPose.pose.position.x - real.x;
+    errorY =  goalPose.pose.position.y - real.y;
+    errorZ =  goalPose.pose.position.z - real.z ;
     errorW =  w;
     pX = kp * errorX;
     pY = kp * errorY;
@@ -164,7 +152,7 @@ void TruckFollower::globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& m
 
     // publishing this data to be recorded in a bag file
     pidMsg.dronePoseX = real.x;                       pidMsg.dronePoseY = real.y;                     pidMsg.dronePoseZ = real.z;
-    pidMsg.goalPoseX  = -goalPose.pose.position.x ;   pidMsg.goalPoseY  = -goalPose.pose.position.y;  pidMsg.goalPoseZ  = -goalPose.pose.position.z;
+    pidMsg.goalPoseX  = goalPose.pose.position.x ;    pidMsg.goalPoseY  = goalPose.pose.position.y;   pidMsg.goalPoseZ  = goalPose.pose.position.z;
     pidMsg.positionErrorX = errorX;                   pidMsg.positionErrorY = errorY;                 pidMsg.positionErrorZ = errorZ;     pidMsg.positionErrorW = errorW;
     pidMsg.PX = pX;                                   pidMsg.PY = pY;                                 pidMsg.PZ = pZ;                     pidMsg.PW = pW;
     pidMsg.IX = iX;                                   pidMsg.IY = iY;                                 pidMsg.IZ = iZ;                     pidMsg.IW = iW;

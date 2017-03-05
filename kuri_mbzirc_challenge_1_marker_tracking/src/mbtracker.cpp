@@ -176,7 +176,7 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 		}else{
 		  ROS_WARN("We're tracking the model, but we can't find a face with 5 points.. this shouldn't happen..");
 		}
-	 }else{
+     }else{
 	   ROS_WARN("We're tracking the model, but couldn't find any faces. This shuoldn't happen!");
 	 }
 	}catch(vpException e){
