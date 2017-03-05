@@ -193,6 +193,16 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  false, 3);
   }
 
+  if(!trackingState)
+  {
+	// set region of interest to all 0's
+	roi.x_offset = 0;
+	roi.y_offset = 0;
+	roi.width = 0;
+	roi.height = 0;
+	roi.do_rectify = false;
+  }
+
   if(displayEnabled)
 	vpDisplay::flush(I);
   
