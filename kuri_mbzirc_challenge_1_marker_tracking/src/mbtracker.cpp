@@ -73,14 +73,11 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
   
   if(detectedState && !trackingState)
   {
-	// initialize the tracker
-	// I have to hardcode the 3D points in. I'm sure there's a better way since I already defined these 
-	// in the .CAO file...
+	// initialize the tracker (assuming the first face in the model should be the square)
+	vpMbtPolygon * poly = tracker->getFaces().getPolygon()[0];
 	std::vector<vpPoint> points3D(4);
-	points3D[0] = vpPoint(-75, 75, 0);
-	points3D[1] = vpPoint(-75, -75, 0);
-	points3D[2] = vpPoint(75, -75, 0);
-	points3D[3] = vpPoint(75, 75, 0);
+	for(int i = 0; i < 4; i++)
+	  points3D[i] = poly->getPoint(i);
 	
 	// get points from detector
 	double detectorPoints[8];
