@@ -201,6 +201,14 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	roi.width = 0;
 	roi.height = 0;
 	roi.do_rectify = false;
+
+    pose.pose.position.x =0 ; // convert to meters
+    pose.pose.position.y = 0;//trans[1] * 0.01;
+    pose.pose.position.z = 0;//trans[2] * 0.01;
+    pose.pose.orientation.x = 0;//q.x();
+    pose.pose.orientation.y = 0;//q.y();
+    pose.pose.orientation.z = 0;//q.z();
+    pose.pose.orientation.w = 0;//q.w();
   }
 
   if(displayEnabled)

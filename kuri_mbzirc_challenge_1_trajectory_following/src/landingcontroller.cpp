@@ -25,7 +25,7 @@ TruckFollower::TruckFollower(const ros::NodeHandle &_nh, const ros::NodeHandle &
   velPub           = nh.advertise <geometry_msgs ::TwistStamped >("/mavros/setpoint_velocity/cmd_vel", 1);
   pidPub           = nh.advertise <kuri_mbzirc_challenge_1_msgs::pidData >("/pidData", 1);
   goalSub          = nh.subscribe("/visptracker_pose_tunnel", 1000, &TruckFollower::goalCallback,this);
-  globalPoseSub  = nh.subscribe("/mavros/global_position/global", 1000, &TruckFollower::globalPoseCallback,this);
+ //globalPoseSub  = nh.subscribe("/mavros/global_position/global", 1000, &TruckFollower::globalPoseCallback,this);
   compassSub      = nh.subscribe ("/mavros/global_position/compass_hdg", 1, &TruckFollower::headingCallback,this);
 
   nh.param("kp", kp, 0.05);
@@ -70,16 +70,6 @@ void TruckFollower::goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg
   goalLastReceived = ros::Time::now();
   ROS_INFO("TEST"); // this should be done before sending it to this component
   goalPose = *msg;
-
-}
-
-void TruckFollower::headingCallback(const std_msgs::Float64::ConstPtr& msg)
-{
-  yaw = msg->data * 3.14159265359 / 180.0 ;
-}
-
-void TruckFollower::globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
-{
   real.x= 0 ; //msg ->latitude;
   real.y= 0 ; //msg ->longitude;
   real.z= 0 ; //msg ->altitude;
@@ -103,7 +93,7 @@ void TruckFollower::globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& m
     errorX =  goalPose.pose.position.x - real.x;
     errorY =  goalPose.pose.position.y - real.y;
     errorZ =  goalPose.pose.position.z - real.z ;
-    errorW =  w;
+    errorW =  0;
     pX = kp * errorX;
     pY = kp * errorY;
     pZ = kp * errorZ;
@@ -169,7 +159,19 @@ void TruckFollower::globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& m
       twist.twist.angular.z = 0;
     }
   }
+
+
 }
+
+void TruckFollower::headingCallback(const std_msgs::Float64::ConstPtr& msg)
+{
+  yaw = msg->data * 3.14159265359 / 180.0 ;
+}
+
+/*void TruckFollower::globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
+{
+
+}*/
 
 int main(int argc , char **argv)
 {

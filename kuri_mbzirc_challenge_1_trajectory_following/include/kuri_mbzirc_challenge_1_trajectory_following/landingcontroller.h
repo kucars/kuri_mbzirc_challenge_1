@@ -41,7 +41,7 @@ public:
   void mavrosStateCallback(const mavros_msgs::State::ConstPtr& msg);
   void goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
   void headingCallback(const std_msgs::Float64::ConstPtr& msg);
-  void globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg);
+ // void globalPoseCallback(const sensor_msgs::NavSatFix::ConstPtr& msg);
 
 private:
   ros::NodeHandle nh;
@@ -50,7 +50,7 @@ private:
   ros::Publisher velPub;
   ros::Publisher pidPub;
   ros::Subscriber goalSub;
-  ros::Subscriber globalPoseSub;
+  //ros::Subscriber globalPoseSub;
   ros::Subscriber compassSub;
   ros::ServiceClient armingClient;
   geometry_msgs ::Point real;

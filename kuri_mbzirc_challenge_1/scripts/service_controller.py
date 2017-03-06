@@ -42,106 +42,93 @@ from nav_msgs.msg import Odometry
 class ControllerService:
 	def __init__(self):
      		print 'Starting Service 1'
-     		self.s = rospy.Service('controller_service', navigation , self.pos_vel_controller)
-		self.pub = rospy.Publisher("mavros/setpoint_position/local", PoseStamped, queue_size=100)
-		self.pub2 = rospy.Publisher('/visptracker_pose', PoseStamped, queue_size=10)
-		self.sub =  rospy.Subscriber("mavros/global_position/local", Odometry, self.poseCallback)
-		self.sub2 =  rospy.Subscriber("mavros/local_position/pose", PoseStamped, self.poseCallback2)
-     		self.serviceType = 3
-		self.exploreFlag = False
-		self.landFlag = False 
-		self.landFlagDone = 0 
-		self.msg  = PoseStamped() 
-		self.msg2 = PoseStamped() 
-		self.PoseXlocal = 0 
-		self.PoseYlocal = 0 
-		self.PoseZlocal = 0
-		self.strt = "Nothing"# navResponse
+     		self.controllerService 		= rospy.Service('controllerService', navigation , self.pos_vel_controller)
+		self.localPosePub 		= rospy.Publisher("mavros/setpoint_position/local", PoseStamped, queue_size=10)
+		self.goalPosePub 		= rospy.Publisher('/visptracker_pose_tunnel', PoseStamped, queue_size=10)
+		self.localPoseSub 		= rospy.Subscriber("mavros/global_position/local", Odometry, self.poseCallback)
+		self.globalPoseSub 		= rospy.Subscriber("mavros/local_position/pose", PoseStamped, self.poseCallback2)
+
+     		self.serviceType 	= 3
+		self.exploreFlag 	= False
+		self.landFlag 		= False 
+		self.landFlagDone 	= 0 
+		self.explorationMsg	= PoseStamped() 
+		self.landingMsg  	= PoseStamped() 
+		self.PoseXlocal 	= 0 
+		self.PoseYlocal 	= 0 
+		self.PoseZlocal 	= 0
 
 	
-
+	
    	def pos_vel_controller(self , req):
 		self.landFlagDone = req.LDFlag 
    		if req.srvtype == 1 :
 			self.serviceType = 1
-			self.msg.pose.position.x = req.wayPointX
-			self.msg.pose.position.y = req.wayPointY
-			self.msg.pose.position.z = req.wayPointZ
+			self.explorationMsg.pose.position.x = req.wayPointX
+			self.explorationMsg.pose.position.y = req.wayPointY
+			self.explorationMsg.pose.position.z = req.wayPointZ
 			if self.exploreFlag:	
-				navigationResponse = "succeeded"
+				#navigationResponse = "succeeded"
 				n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
 				n.navResponse = "succeeded"
-				print "n" , n 
+				print "navigationResponse" , n 
 				return n 
 			else: 
 				n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse() 
 				n.navResponse = "aborted"
 				return n 
-		else:
-			if req.srvtype == 2:
-				self.serviceType = 2 	
-				print 'landFlag' , self.landFlagDone , '   ', self.landFlag
-				self.msg2.pose.position.x = req.wayPointX
-				self.msg2.pose.position.y = req.wayPointY
-				self.msg2.pose.position.z = req.wayPointZ
-				if self.landFlagDone :#or self.landFlag: # this comes form the state machine 
-				  print "Landed DONE " 
-				  n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
-				  n.navResponse = "succeeded2"
-				  return n 
-				else: 
-				  print "Keep landing" 
-				  n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
-				  n.navResponse = "aborted"
-				  return n 
-				
+		elif req.srvtype == 2:
+			self.serviceType = 2 	
+			print 'landFlag' , self.landFlagDone , '   ', self.landFlag
+			# transformation should be done here 
+
+			self.landingMsg.pose.position.x = req.wayPointX
+			self.landingMsg.pose.position.y = req.wayPointY
+			self.landingMsg.pose.position.z = req.wayPointZ
+			if self.landFlagDone :#or self.landFlag: # this comes form the state machine 
+			      print "Landed DONE " 
+			      n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
+			      n.navResponse = "succeeded"
+			      return n 
+			else: 
+			      print "Keep landing &&&&&&&&7" 
+			      n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
+			      n.navResponse = "aborted"
+			      return n 
+				  
 				
 	def poseCallback(self , msgPose):
 		if self.serviceType == 1: 
 			#print "FromCallback 1" 
-			self.pub.publish(self.msg) 
+			self.localPosePub.publish(self.explorationMsg) 
 			###################################################################################3
 			# This step uses the local data instead of the global data until we find a solution 
 			###################################################################################3
 			#if (abs(msgPose.pose.position.x - self.msg.pose.position.x) < 0.2 and
 			#    abs(msgPose.pose.position.y - self.msg.pose.position.y) < 0.2 and 
 			#    abs(msgPose.pose.position.z - self.msg.pose.position.z) < 0.2 )
-			if abs(self.PoseXlocal - self.msg.pose.position.x) < 0.2 and abs(self.PoseYlocal- self.msg.pose.position.y) < 0.2 and abs(self.PoseZlocal- self.msg.pose.position.z) < 0.2 :
+			if abs(self.PoseXlocal - self.explorationMsg.pose.position.x) < 0.2 and abs(self.PoseYlocal- self.explorationMsg.pose.position.y) < 0.2 and abs(self.PoseZlocal- self.explorationMsg.pose.position.z) < 0.2 :
 				self.exploreFlag = True 
 				self.serviceType = 0
 			
+		elif self.serviceType == 2:
+			self.goalPosePub.publish(self.landingMsg)
+			if (self.landFlagDone): 
+			    self.landFlag = True 
+			    self.serviceType = 0
+		elif self.serviceType == 3:
+			# this is the start point as if we performing the take off 
+		  	self.explorationMsg.pose.position.x = self.PoseXlocal
+			self.explorationMsg.pose.position.y = self.PoseYlocal
+			self.explorationMsg.pose.position.z = 2
+			self.localPosePub.publish(self.explorationMsg) 
+
 		else: 
-			if self.serviceType == 2:
-			      self.pub2.publish(self.msg2)
-			      #print 'publishing msg2' 
-			      #if (abs(msgPose.pose.pose.position.x - self.msg2.pose.position.x) < 0.2 and abs(msgPose.pose.pose.position.y - self.msg2.pose.position.y) < 0.2 and abs(msgPose.pose.pose.position.z - self.msg2.pose.position.z) < 0.2 ) :
-				#self.landFlag = True
-				#self.serviceType = 0
-			      if (self.landFlagDone): 
-				  self.landFlag = True 
-				  self.serviceType = 0
-			else:
-			      if self.serviceType == 3: 
-				#if this is being run before the state machine 
-				#print "Publish this msg "
-				self.msg.pose.position.x = self.PoseXlocal#msgPose.pose.pose.position.x
-				print self.msg.pose.position.x
-				self.msg.pose.position.y = self.PoseYlocal#msgPose.pose.pose.position.y
-				print self.msg.pose.position.y
-				self.msg.pose.position.z = 1 #msgPose.pose.pose.position.z + 0.2 
-				print self.msg.pose.position.z
-				self.pub.publish(self.msg) 
-			      else:  
-				#if this Hovering when other states are being run  
-				#print "Hover" 
-				self.msg.pose.position.x = self.PoseXlocal#msgPose.pose.pose.position.x
-				self.msg.pose.position.y = self.PoseYlocal#msgPose.pose.pose.position.y
-				self.msg.pose.position.z = self.PoseZlocal #msgPose.pose.pose.position.z + 0.2 
-				self.msg2.pose.position.x = msgPose.pose.pose.position.x
-				self.msg2.pose.position.y = msgPose.pose.pose.position.y
-				self.msg2.pose.position.z = msgPose.pose.pose.position.z
-				self.pub.publish(self.msg) 
-				self.pub2.publish(self.msg2) 
+			# this is for hovering when we are performing other states 
+			self.landingMsg.pose.position.x = 0
+			self.landingMsg.pose.position.y = 0#msgPose.pose.pose.position.y
+			self.landingMsg.pose.position.z = 0#msgPose.pose.pose.position.z
+			self.goalPosePub.publish(self.landingMsg) 
 
 				
 	    

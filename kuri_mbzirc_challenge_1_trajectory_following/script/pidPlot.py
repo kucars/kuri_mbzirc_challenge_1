@@ -36,7 +36,7 @@ PIDYY=[]
 PIDZZ=[]
 PIDWW=[]
 time=[]
-bag = rosbag.Bag('test008.bag')
+bag = rosbag.Bag('test004.bag')
 for topic, msg, t in bag.read_messages(topics=['/pidData']):
     header.append(msg.header.stamp.to_sec()) 
     # time.append(msg.timeR) 
@@ -73,7 +73,7 @@ timeSet = []
 vx =[] 
 vy =[] 
 vz = [] 
-bag = rosbag.Bag('test006.bag')
+bag = rosbag.Bag('test004.bag')
 for topic, msg, t in bag.read_messages(topics=['/mavros/setpoint_velocity/cmd_vel']):
     timeSet.append(msg.header.seq)
     vx.append(msg.twist.linear.x)
@@ -85,7 +85,7 @@ rtimeSet = []
 rvx =[] 
 rvy =[] 
 rvz = [] 
-bag = rosbag.Bag('test006.bag')
+bag = rosbag.Bag('test004.bag')
 for topic, msg, t in bag.read_messages(topics=['/mavros/local_position/velocity']):
     rtimeSet.append(msg.header.seq)
     rvx.append(msg.twist.linear.x)
