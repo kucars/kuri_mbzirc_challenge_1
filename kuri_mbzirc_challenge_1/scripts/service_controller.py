@@ -38,84 +38,110 @@ from kuri_mbzirc_challenge_1_msgs.srv import navigation , navigationRequest , na
 
 from geometry_msgs.msg import PoseStamped 
 from nav_msgs.msg import Odometry 
+import math
+import tf
 
 class ControllerService:
 	def __init__(self):
-     		print 'Starting Service 1'
-     		self.controllerService 		= rospy.Service('controllerService', navigation , self.pos_vel_controller)
-		self.localPosePub 		= rospy.Publisher("mavros/setpoint_position/local", PoseStamped, queue_size=10)
+                print 'Starting Drone Control Service'
+                self.controllerService 		= rospy.Service('controllerService', navigation , self.serviceCallback)
+                self.localPosePub 		= rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=10)
 		self.goalPosePub 		= rospy.Publisher('/visptracker_pose_tunnel', PoseStamped, queue_size=10)
-		self.localPoseSub 		= rospy.Subscriber("mavros/global_position/local", Odometry, self.poseCallback)
-		self.globalPoseSub 		= rospy.Subscriber("mavros/local_position/pose", PoseStamped, self.poseCallback2)
-
+                self.localPoseSub 		= rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.poseCallback)
+                self.landingZonePose            = rospy.Subscriber('/visptracker_pose', PoseStamped, self.landingZonePose)
      		self.serviceType 	= 3
-		self.exploreFlag 	= False
-		self.landFlag 		= False 
-		self.landFlagDone 	= 0 
+                self.explorationDone 	= False
 		self.explorationMsg	= PoseStamped() 
 		self.landingMsg  	= PoseStamped() 
 		self.PoseXlocal 	= 0 
 		self.PoseYlocal 	= 0 
 		self.PoseZlocal 	= 0
+                self.landingDone        = False
+                self.listener           = tf.TransformListener()
+                self.trackingLost       = False
+                self.trackingLostCounter= 0
+                self.explorationPoseX   = rospy.get_param("FixPoseX")
+                self.explorationPoseY   = rospy.get_param("FixPoseY")
+                self.explorationPoseZ   = rospy.get_param("FixPoseZ")
 
-	
-	
-   	def pos_vel_controller(self , req):
-		self.landFlagDone = req.LDFlag 
+        def landingZonePose(self , poseMsg):
+          if poseMsg.pose.position.x != 0 :
+                self.trackingLost = False
+                self.trackingLostCounter = 0
+                self.listener.waitForTransform("base_link",'downward_cam_optical_frame',rospy.Time() , rospy.Duration(1.0))
+                (staticDistance , Quat) = self.listener.lookupTransform('base_link','downward_cam_optical_frame',rospy.Time(0));
+                eulerAngles = tf.transformations.euler_from_quaternion(Quat)
+                yaw = eulerAngles[2]
+                theta1 = 0 # this is the head of the marker
+                self.landingMsg.pose.position.x = staticDistance[0] + (poseMsg.pose.position.x * math.cos( theta1 + yaw) )
+                self.landingMsg.pose.position.y = staticDistance[1] + (poseMsg.pose.position.y * math.sin( theta1 + yaw) )  #poseMsg.pose.position.y
+                self.landingMsg.pose.position.z = staticDistance[2] + (poseMsg.pose.position.z * math.cos( 3.14159265359) ) #poseMsg.pose.position.z
+                #print "Received a new tracked pose x:", self.landingMsg.pose.position.x, " y:",self.landingMsg.pose.position.y," z:",self.landingMsg.pose.position.z
+          else:
+              self.trackingLostCounter = self.trackingLostCounter + 1
+              if self.trackingLostCounter >= 5:
+                  self.trackingLost = True
+
+        def serviceCallback(self , req):
    		if req.srvtype == 1 :
+                        self.explorationDone = False
 			self.serviceType = 1
-			self.explorationMsg.pose.position.x = req.wayPointX
-			self.explorationMsg.pose.position.y = req.wayPointY
-			self.explorationMsg.pose.position.z = req.wayPointZ
-			if self.exploreFlag:	
-				#navigationResponse = "succeeded"
+                        self.explorationMsg.pose.position.x = self.explorationPoseX
+                        self.explorationMsg.pose.position.y = self.explorationPoseY
+                        self.explorationMsg.pose.position.z = self.explorationPoseZ
+                        print "Received Exploration Request", self.explorationMsg.pose.position.z
+                        while not self.explorationDone:
+                          rospy.sleep(0.1)
+                          #print "Going up";
+                        if self.explorationDone:
 				n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
 				n.navResponse = "succeeded"
-				print "navigationResponse" , n 
 				return n 
 			else: 
 				n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse() 
 				n.navResponse = "aborted"
 				return n 
 		elif req.srvtype == 2:
-			self.serviceType = 2 	
-			print 'landFlag' , self.landFlagDone , '   ', self.landFlag
-			# transformation should be done here 
-
-			self.landingMsg.pose.position.x = req.wayPointX
-			self.landingMsg.pose.position.y = req.wayPointY
-			self.landingMsg.pose.position.z = req.wayPointZ
-			if self.landFlagDone :#or self.landFlag: # this comes form the state machine 
+                        self.serviceType  = 2
+                        self.landingDone  = False
+                        self.trackingLost = False
+                        print 'Service call: Received Landing Request'
+                        while not self.landingDone and not self.trackingLost:
+                          rospy.sleep(0.1)
+                          #print "Landing";
+                        if self.landingDone and not self.trackingLost:
 			      print "Landed DONE " 
-			      n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
-			      n.navResponse = "succeeded"
+                              n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
+                              n.navResponse = "succeeded"
 			      return n 
-			else: 
-			      print "Keep landing &&&&&&&&7" 
+                        else:
 			      n = kuri_mbzirc_challenge_1_msgs.srv.navigationResponse()
 			      n.navResponse = "aborted"
-			      return n 
-				  
+			      return n 				  
 				
 	def poseCallback(self , msgPose):
-		if self.serviceType == 1: 
-			#print "FromCallback 1" 
-			self.localPosePub.publish(self.explorationMsg) 
-			###################################################################################3
-			# This step uses the local data instead of the global data until we find a solution 
-			###################################################################################3
-			#if (abs(msgPose.pose.position.x - self.msg.pose.position.x) < 0.2 and
-			#    abs(msgPose.pose.position.y - self.msg.pose.position.y) < 0.2 and 
-			#    abs(msgPose.pose.position.z - self.msg.pose.position.z) < 0.2 )
-			if abs(self.PoseXlocal - self.explorationMsg.pose.position.x) < 0.2 and abs(self.PoseYlocal- self.explorationMsg.pose.position.y) < 0.2 and abs(self.PoseZlocal- self.explorationMsg.pose.position.z) < 0.2 :
-				self.exploreFlag = True 
-				self.serviceType = 0
-			
+                self.PoseXlocal = msgPose.pose.position.x
+                self.PoseYlocal = msgPose.pose.position.y
+                self.PoseZlocal = msgPose.pose.position.z
+                if self.serviceType == 1:
+                        self.localPosePub.publish(self.explorationMsg)
+                        distance2Pose = math.sqrt((self.PoseXlocal - self.explorationMsg.pose.position.x)*(self.PoseXlocal - self.explorationMsg.pose.position.x) +
+                                                  (self.PoseYlocal - self.explorationMsg.pose.position.y)*(self.PoseYlocal - self.explorationMsg.pose.position.y) +
+                                                  (self.PoseZlocal - self.explorationMsg.pose.position.z)*(self.PoseZlocal- self.explorationMsg.pose.position.z))
+                        #print "Requested Altitude", self.explorationMsg.pose.position.z," distance:", distance2Pose
+                        if  distance2Pose < 0.2 :
+                                self.explorationDone = True
+				self.serviceType = 0			
 		elif self.serviceType == 2:
 			self.goalPosePub.publish(self.landingMsg)
-			if (self.landFlagDone): 
-			    self.landFlag = True 
-			    self.serviceType = 0
+                        distance2Pose = math.sqrt((self.PoseXlocal - self.landingMsg.pose.position.x)*(self.PoseXlocal - self.landingMsg.pose.position.x) +
+                                                  (self.PoseYlocal - self.landingMsg.pose.position.y)*(self.PoseYlocal - self.landingMsg.pose.position.y) +
+                                                  (self.PoseZlocal - self.landingMsg.pose.position.z)*(self.PoseZlocal - self.landingMsg.pose.position.z))
+                        if distance2Pose<=0.2:
+                            self.landingDone = True;
+                            self.serviceType = 0
+                        else:
+                            self.landingDone = False
 		elif self.serviceType == 3:
 			# this is the start point as if we performing the take off 
 		  	self.explorationMsg.pose.position.x = self.PoseXlocal
@@ -128,20 +154,7 @@ class ControllerService:
 			self.landingMsg.pose.position.x = 0
 			self.landingMsg.pose.position.y = 0#msgPose.pose.pose.position.y
 			self.landingMsg.pose.position.z = 0#msgPose.pose.pose.position.z
-			self.goalPosePub.publish(self.landingMsg) 
-
-				
-	    
-	def poseCallback2(self , msgPoseLocal):
-		#print "Reading local position data" 
-		################################################################################3
-		# Only used becasue the setpoint_position only accept local data local reference 
-		################################################################################3
-		self.PoseXlocal = msgPoseLocal.pose.position.x
-		self.PoseYlocal = msgPoseLocal.pose.position.y
-		self.PoseZlocal = msgPoseLocal.pose.position.z
-		   	
-			
+			self.goalPosePub.publish(self.landingMsg) 						   				
 					
 def main(args):
   rospy.init_node('Controller_Service')
