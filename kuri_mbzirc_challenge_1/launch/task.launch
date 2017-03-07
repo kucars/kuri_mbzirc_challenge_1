@@ -59,8 +59,7 @@
         <arg name="config_yaml" value="$(arg config_yaml)" />
     </include>
 
-    <param name="robot_description" textfile="$(find kuri_mbzirc_sim)/urdf/$(arg vehicle)/iris_with_sensors.urdf"
-     />
+    <param name="robot_description" textfile="$(find kuri_mbzirc_sim)/urdf/$(arg vehicle)/iris_with_sensors.urdf"/>
 
       <!-- send the robot XML to param server -->
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
@@ -71,14 +70,16 @@
     <!-- running truck --> 
     <include file="$(find kuri_mbzirc_challenge_1)/launch/truck.launch">
     <arg name="enable_truck_motion" value="$(arg enable_truck_motion)"/></include>
+      
   
-  
-    <node name="service_Postition_estimation" pkg="kuri_mbzirc_challenge_1" type="server" ></node>
-    <node name="off_board" pkg="kuri_mbzirc_challenge_1" type="off_board" ></node>
-    <node name="marker_detection" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="marker_detection_gazebo.py" /> <!--output="screen"-->
-    <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="st4.py" /><!--output="screen"-->
+  <!--<node name="service_Postition_estimation" pkg="kuri_mbzirc_challenge_1" type="server" ></node>
+  <node name="service_Controller" pkg="kuri_mbzirc_challenge_1" type="service_controller.py" ></node>-->
+  <node name="off_board" pkg="kuri_mbzirc_challenge_1" type="off_board" ></node>
+    <!--<node name="attitude_control" pkg="kuri_mbzirc_challenge_1_trajectory_following" type="attitude_control" ></node>
+  <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="st.py" output="screen"/> 
+ -->
+  <include file="$(find kuri_mbzirc_challenge_1_marker_tracking)/launch/task.launch" ></include>
+  <!--output="screen"-->
+      <!--<node name="marker_detection" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="marker_detection_gazebo.py" /--> <!--output="screen"-->
+        <!-- running truck --> 
 </launch>
-
-
-
-

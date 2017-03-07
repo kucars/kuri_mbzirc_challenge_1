@@ -141,16 +141,27 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  roi.y_offset = zone_warped.getMiny();
 	  roi.width = zone_warped.getMaxx() - zone_warped.getMinx();
 	  roi.height = zone_warped.getMaxy() - zone_warped.getMiny();
+	  roi.do_rectify = true;
+
 	}catch(vpTrackingException e)
 	{
 	  ROS_INFO("An exception occurred.. cancelling tracking.");
-	  tracker->resetTracker();
-	  trackingState = false;
-	  detectedState = false;
+	  reset();
 	}
   }else{
 	//trackerData.confidence /= 2.0f; // half the confidence level every step we don't track
   }
+
+  if(!trackingState)
+  {
+	// set region of interest to all 0's
+	roi.x_offset = 0;
+	roi.y_offset = 0;
+	roi.width = 0;
+	roi.height = 0;
+	roi.do_rectify = false;
+  }
+
   trackEnd = clock();
   
   displayStart = clock();
@@ -167,6 +178,13 @@ bool TrackLandingMark::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
   double sum = vb + detect + init + track + display;
   ROS_INFO("Times: %f, %f, %f, %f, %f; Total: %f", vb, detect, init, track, display, sum);
 #endif
+}
+
+void TrackLandingMark::reset()
+{
+  tracker->resetTracker();
+  trackingState = false;
+  detectedState = false;
 }
 
 // get methods

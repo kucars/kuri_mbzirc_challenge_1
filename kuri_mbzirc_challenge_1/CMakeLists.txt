@@ -28,16 +28,16 @@ catkin_package(
     CATKIN_DEPENDS message_runtime message_generation
 )
 
-set(CUSTOM_OPENCV_DIR "/usr/local")
+#set(CUSTOM_OPENCV_DIR "/usr/local")
 
 find_package(Eigen REQUIRED)
 find_package(PCL REQUIRED)
-find_package(OpenCV 2 REQUIRED PATHS ${CUSTOM_OPENCV_DIR} NO_DEFAULT_PATH)
+#find_package(OpenCV 2 REQUIRED PATHS ${CUSTOM_OPENCV_DIR} NO_DEFAULT_PATH)
 find_package(kuri_mbzirc_challenge_1_msgs REQUIRED)
 
 include_directories( include
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
+#  ${OpenCV_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS})
 #############
@@ -54,13 +54,15 @@ target_link_libraries(off_board ${catkin_LIBRARIES})
 #target_link_libraries(offb_follow_target ${catkin_LIBRARIES})
 
 
-add_executable(server src/server_1.cpp)
-target_link_libraries(server ${catkin_LIBRARIES})
-add_dependencies(server ${catkin_EXPORTED_TARGETS})
+#add_executable(server src/server_1.cpp)
+#target_link_libraries(server ${catkin_LIBRARIES})
+#add_dependencies(server ${catkin_EXPORTED_TARGETS})
 
 #add_executable(client src/client_1.cpp)
 #target_link_libraries(client ${catkin_LIBRARIES})
-#add_dependencies(client  ${catkin_EXPORTED_TARGETS})
+#add_dependencies(client ${catkin_EXPORTED_TARGETS})
+
+
 
 
 #############

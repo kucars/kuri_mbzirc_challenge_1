@@ -1,8 +1,8 @@
-int32 type
+float64 srvtype
 float64 wayPointX
 float64 wayPointY
 float64 wayPointZ
-int32 LDFlag
+float64 LDFlag
 ---
-std_msgs/String navResponse
+string navResponse
 

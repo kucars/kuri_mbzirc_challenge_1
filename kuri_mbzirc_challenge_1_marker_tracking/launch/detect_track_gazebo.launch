@@ -1,3 +1,5 @@
+<?xml version="1.0"?>
+
 <launch>
 
 	<node name="marker_detection_gazebo" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="marker_detection_gazebo.py" /> <!--output="screen"-->
@@ -13,12 +15,13 @@
     <rosparam command="load" file="$(find cftld_ros)/config/default.yaml" />
   </node>
 
-	<node name="image_view1" pkg="image_view" type="image_view" > <!--respawn="false" output="screen"-->
-	<remap from="image" to="detection/image_raw" />
+  <!--
+	<node name="image_view1" pkg="image_view" type="image_view" > --><!--respawn="false" output="screen"-->
+<!--	<remap from="image" to="detection/image_raw" />
 	</node>
 
-	<node name="image_view2" pkg="image_view" type="image_view" > <!--respawn="false" output="screen"-->
-	<remap from="image" to="cftld/tracking/image_raw" />
+	<node name="image_view2" pkg="image_view" type="image_view" >--> <!--respawn="false" output="screen"-->
+	<!--<remap from="image" to="cftld/tracking/image_raw" />
 	</node>
-
+-->
 </launch>

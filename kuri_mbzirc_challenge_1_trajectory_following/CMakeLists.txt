@@ -73,6 +73,10 @@ add_executable(attitude_control src/attitudeController.cpp)
 target_link_libraries(attitude_control ${catkin_LIBRARIES})
 target_link_libraries(attitude_control ${OpenCV_LIBRARIES})
 
+add_executable(landing_control src/landingcontroller.cpp)
+target_link_libraries(landing_control ${catkin_LIBRARIES})
+target_link_libraries(landing_control ${OpenCV_LIBRARIES})
+
 #add_executable(attitude_control src/controller.cpp)
 #target_link_libraries(attitude_control ${catkin_LIBRARIES})
 #target_link_libraries(attitude_control ${OpenCV_LIBRARIES})

@@ -34,7 +34,7 @@ add_message_files(
    DIRECTORY msg
    FILES
    PoseEsti.msg
-
+   pidData.msg
 )
 
 
@@ -42,6 +42,9 @@ add_service_files(
   DIRECTORY srv
   FILES
   PES.srv
+  navigation.srv
+  Mission.srv
+
 
 )
 
