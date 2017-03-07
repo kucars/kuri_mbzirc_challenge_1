@@ -31,24 +31,36 @@ bool DetectLandingMark::detect(const sensor_msgs::Image::ConstPtr& msg)
 
 bool DetectLandingMark::detect(Mat frame, int show_result=0) {
     Mat edged;
-    Mat edged2;
     Mat gray;
     Mat roi_square;
+    Mat gray_threshold;
     string status;
     int status_flag = 0;
+    int minimum_marker_wh = 50;
 		
 	//convert the frame to grayscale, blur it, and detect edges
 	cvtColor(frame, gray, COLOR_BGR2GRAY);
 	GaussianBlur(gray, gray, Size(7,7), 0);
-	Canny(gray, edged, 50, 150);
-			   
+	//sharpening the frame
+	/*
+    Mat sharpening_kernel = (Mat_<char>(5, 5) << -1, -1, -1, -1, -1,
+                                -1, 2, 2, 2, -1,
+                                -1, 2, 8, 2, -1,
+                                -1, 2, 2, 2, -1,
+                                -1, -1, -1, -1, -1) / 8.0;
+    Mat sharpened_gray;
+    filter2D(gray, sharpened_gray, gray.depth(), sharpening_kernel);
+	*/
+	//adaptive thresholding for canny
+	double CannyAdaptThresh = threshold(gray,gray_threshold,0,255,CV_THRESH_BINARY|CV_THRESH_OTSU);
+	double CannyMinThresh = 0.1 * CannyAdaptThresh;
+	Canny(gray, edged, CannyMinThresh, CannyAdaptThresh);	   
 	//find contours in the edge map
 	vector<vector<Point> > contours;
 	vector<Point> approx;
 	vector<Vec4i> hierarchy;
 	vector<Point> hull;
-	edged.copyTo(edged2);
-	findContours(edged2, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	findContours(edged, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 	
 	//loop over the contours
 	for( int i = 0; i< contours.size(); i++ ){
@@ -71,7 +83,7 @@ bool DetectLandingMark::detect(Mat frame, int show_result=0) {
 			double solidity = area / double(hullArea);
 			
 			//compute whether or not the width and height, solidity, and aspect ratio of the contour falls within appropriate bounds
-			bool keepDims = (rect.width > 100 and rect.height > 100)?true:false;
+			bool keepDims = (rect.width > minimum_marker_wh and rect.height > minimum_marker_wh)?true:false;
 			bool keepSolidity = (solidity > 0.9)?true:false;
 			bool keepAspectRatio = (aspectRatio >= 0.8 and aspectRatio <= 1.2)?true:false;
 			
