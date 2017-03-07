@@ -78,8 +78,8 @@
       
     <include file="$(find kuri_mbzirc_challenge_1_marker_tracking)/launch/task.launch" ></include>
     <node name="off_board" pkg="kuri_mbzirc_challenge_1" type="off_board" ></node>
-    <node name="service_Controller" pkg="kuri_mbzirc_challenge_1" type="service_controller_2.py" ></node>
+    <!--<node name="service_Controller" pkg="kuri_mbzirc_challenge_1" type="service_controller.py" ></node>
     <node name="land" pkg="kuri_mbzirc_challenge_1_trajectory_following" type="landing_control" > </node> 
-    <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="state_machine.py" output="screen"/> 
+    <node name="state_machine" pkg="kuri_mbzirc_challenge_1_system_coordinator" type="state_machine.py" output="screen"/> -->
 </launch>
     
