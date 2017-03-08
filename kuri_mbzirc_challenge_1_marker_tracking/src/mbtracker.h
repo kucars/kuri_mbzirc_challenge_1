@@ -5,10 +5,11 @@
 #include <visp/vpMbEdgeTracker.h>
 #include "detectortracker.h"
 #include "detector/landing_mark_detection.h"
+#include "simpleposeextrapolator.h"
 #include "visp_bridge/image.h"
 #include "sensor_msgs/RegionOfInterest.h"
 #include "geometry_msgs/PoseStamped.h"
-
+#include <time.h>
 
 /**
  * This class represents a model-based tracker using the VISP framework	
@@ -33,6 +34,9 @@ public:
   bool isTracking();
   sensor_msgs::RegionOfInterest getRegionOfInterest();
   geometry_msgs::PoseStamped getPoseStamped();
+  double getExtrapolateMaxTime();
+  clock_t getLastTrackTime();
+  bool isResultPredicted(); // returns true if the result was predicted
 
   // set methods
   void enableTrackerDisplay(bool enabled);
@@ -44,6 +48,7 @@ public:
   void setMu2(double mu2);
   void setSampleStep(int samplestep);
   void setCameraParameters(double px, double py, double u0, double v0);
+  void setExtrapolateMaxTime(double newTime);
 
   
 private:
@@ -51,16 +56,25 @@ private:
   vpHomogeneousMatrix cMo;
   vpMe * me;
   vpMbTracker * tracker;
+  SimplePoseExtrapolator extrapolator;
   
   bool detectedState;
   bool trackingState;
+  bool resultIsPredicted;
   bool displayEnabled;
 
   sensor_msgs::RegionOfInterest roi;
   geometry_msgs::PoseStamped pose;
+
+  clock_t lastTrackTime; // stores the last time we successfully tracked
+  double extrapolateMaxTime;
   
   vpImage<unsigned char> I;
   vpDisplayX * display;
+  std::vector<vpPoint> marker3DPoints; // holds the 3D points of the face of the marker
+
+  // helper functions
+  void getROIFromBoxPoints(std::vector<vpImagePoint>& boxPoints, sensor_msgs::RegionOfInterest& roi);
 };
 
 #endif
