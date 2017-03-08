@@ -65,17 +65,10 @@ include_directories( include
 ## Install ##
 #############
 
-#add_executable(attitude_control src/landingOnstaticMarker.cpp)
-#target_link_libraries(attitude_control ${catkin_LIBRARIES})
-
-
-add_executable(attitude_control src/attitudeController.cpp)
-target_link_libraries(attitude_control ${catkin_LIBRARIES})
-target_link_libraries(attitude_control ${OpenCV_LIBRARIES})
-
 add_executable(landing_control src/landingcontroller.cpp)
 target_link_libraries(landing_control ${catkin_LIBRARIES})
 target_link_libraries(landing_control ${OpenCV_LIBRARIES})
+add_dependencies(landing_control kuri_mbzirc_challenge_1_msgs_gencfg kuri_mbzirc_challenge_1_msgs_generate_messages_cpp)
 
 #add_executable(attitude_control src/controller.cpp)
 #target_link_libraries(attitude_control ${catkin_LIBRARIES})
