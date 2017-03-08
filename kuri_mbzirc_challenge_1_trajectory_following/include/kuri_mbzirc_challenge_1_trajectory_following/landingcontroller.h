@@ -70,6 +70,15 @@ private:
   double kp;
   double ki;
   double kd;
+  double kpx;
+  double kix;
+  double kdx;
+  double kpy;
+  double kiy;
+  double kdy;
+  double kpz;
+  double kiz;
+  double kdz;
 
   float errorX;
   float errorY;

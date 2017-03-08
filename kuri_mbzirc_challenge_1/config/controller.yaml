@@ -2,4 +2,14 @@
 kp: 0.05
 ki: 0
 kd: 0.05
+kpx: 0.1
+kix: 0
+kdx: 0.01
+kpy: 0.1
+kiy: 0
+kdy: 0.01
+kpz: 0.01
+kiz: 0
+kdz: 0.001
+
 tolerance_2_goal: 0.2

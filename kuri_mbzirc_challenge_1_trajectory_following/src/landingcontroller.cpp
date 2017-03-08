@@ -31,6 +31,15 @@ TruckFollower::TruckFollower(const ros::NodeHandle &_nh, const ros::NodeHandle &
   nh.param("kp", kp, 0.05);
   nh.param("ki", ki, 0.0);
   nh.param("kd", kd, 0.05);
+  nh.param("kpx", kpx, 0.05);
+  nh.param("kix", kix, 0.0);
+  nh.param("kdx", kdx, 0.05);
+  nh.param("kpy", kpy, 0.05);
+  nh.param("kiy", kiy, 0.0);
+  nh.param("kdy", kdy, 0.05);
+  nh.param("kp", kpz, 0.05);
+  nh.param("ki", kiz, 0.0);
+  nh.param("kd", kdz, 0.05);
   nh.param("tolerance_2_goal", tolerance_2_goal, 0.2);
 
   goalPose.pose.position.x = 0;
@@ -94,19 +103,19 @@ void TruckFollower::goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg
     errorY =  goalPose.pose.position.y - real.y;
     errorZ =  goalPose.pose.position.z - real.z ;
     errorW =  0;
-    pX = kp * errorX;
-    pY = kp * errorY;
-    pZ = kp * errorZ;
+    pX = kpx * errorX;
+    pY = kpy * errorY;
+    pZ = kpz * errorZ;
     pW = kp * errorW;
 
-    iX += ki * errorX;
-    iY += ki * errorY;
-    iZ += ki * errorZ;
+    iX += kix * errorX;
+    iY += kiy * errorY;
+    iZ += kiz * errorZ;
     iW += ki * errorW;
 
-    dX = kd * (errorX - prevErrorX);
-    dY = kd * (errorY - prevErrorY);
-    dZ = kd * (errorZ - prevErrorZ);
+    dX = kdx * (errorX - prevErrorX);
+    dY = kdy * (errorY - prevErrorY);
+    dZ = kdz * (errorZ - prevErrorZ);
     dW = kd * (errorW - prevErrorW);
 
     prevErrorX = errorX;
@@ -122,7 +131,7 @@ void TruckFollower::goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg
 
     // filling velocity commands
     twist.twist.linear.x = aX;
-    twist.twist.linear.y = aY;
+    twist.twist.linear.y =  aY;
     twist.twist.linear.z = aZ;
     twist.twist.angular.z = aW;
     twist.header.stamp = ros::Time::now();

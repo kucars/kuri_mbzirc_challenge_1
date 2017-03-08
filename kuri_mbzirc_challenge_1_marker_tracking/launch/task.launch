@@ -9,7 +9,8 @@
   <arg name="ns"                  default="ardrone"/>
   <arg name="log_file"            default="$(arg ns)"/>
   
-  <arg name="goto" default="true" />
+  <arg name="goto"  default="true" />
+  <arg name="visp_debug" default="false" />
   <!--
   <include file="$(find kuri_mbzirc_sim)/launch/mbzirc_arena_1.launch" >
     <arg name="paused" default="$(arg paused)"/>
@@ -20,7 +21,12 @@
 -->
   <group if="$(arg goto)" >
     <rosparam command="load" file="$(find kuri_mbzirc_challenge_1_marker_tracking)/config/visptracker-params.yaml" />
-    <node launch-prefix="xterm -e gdb -ex run --args" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="visp-tracker" name="visptracker" output="screen"/>
+    <group if = "$(arg visp_debug)">
+      <node launch-prefix="xterm -e gdb -ex run --args" pkg="kuri_mbzirc_challenge_1_marker_tracking" type="visp-tracker" name="visptracker" output="screen"/>
+    </group>
+    <group unless="$(arg visp_debug)" >
+    <node pkg="kuri_mbzirc_challenge_1_marker_tracking" type="visp-tracker" name="visptracker" output="screen"/>
+    </group>
   </group>
 <!--
   <group unless="$(arg headless)" >
