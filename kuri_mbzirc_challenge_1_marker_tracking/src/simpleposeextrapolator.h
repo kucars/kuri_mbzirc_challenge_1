@@ -1,3 +1,6 @@
+#ifndef SIMPLEPOSEEXTRAPOLATOR_H
+#define SIMPLEPOSEEXTRAPOLATOR_H
+
 #include <ros/ros.h>
 #include "geometry_msgs/Pose.h"
 
@@ -19,3 +22,5 @@ private:
   geometry_msgs::Pose prev;
   double timestep; //seconds between the two updates
 };
+
+#endif
