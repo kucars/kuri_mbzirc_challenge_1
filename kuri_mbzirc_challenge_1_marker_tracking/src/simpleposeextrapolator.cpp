@@ -5,6 +5,8 @@
 
 SimplePoseExtrapolator::SimplePoseExtrapolator()
 {
+  timestep = 0.0;
+  ready = false;
 }
 
 SimplePoseExtrapolator::~SimplePoseExtrapolator()
@@ -30,11 +32,18 @@ void SimplePoseExtrapolator::poseUpdate(geometry_msgs::Pose newPose, double step
 {
   prev = current;
   current = newPose;
+
+  if(timestep != 0.0)
+	ready = true; // we have 2 poses
+
   timestep = step;
 }
 
 geometry_msgs::Pose SimplePoseExtrapolator::extrapolate(double step) // input seconds since last update
 {
+  if(!ready)
+	return current; // no extrapolation
+
   // calculate new position
   double velVec[3];
   double newPos[3];
@@ -57,4 +66,12 @@ geometry_msgs::Pose SimplePoseExtrapolator::extrapolate(double step) // input se
   newPose.orientation = tf2::toMsg(newQuat);
   
   return newPose;
+}
+
+void SimplePoseExtrapolator::reset()
+{
+  prev = geometry_msgs::Pose();
+  current = geometry_msgs::Pose();
+  timestep = 0.0;
+  ready = false;
 }

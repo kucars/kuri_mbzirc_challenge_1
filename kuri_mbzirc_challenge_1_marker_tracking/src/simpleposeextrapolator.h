@@ -16,11 +16,13 @@ public:
 
   void poseUpdate(geometry_msgs::Pose newPose, double step);
   geometry_msgs::Pose extrapolate(double step); // input seconds since last update
+  void reset();
 
 private:
   geometry_msgs::Pose current;
   geometry_msgs::Pose prev;
   double timestep; //seconds between the two updates
+  bool ready; // set to true if we have updated the pose at least twice
 };
 
 #endif
