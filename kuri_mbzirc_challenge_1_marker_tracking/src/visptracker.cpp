@@ -27,6 +27,7 @@
 
 ros::Publisher roiPub;
 ros::Publisher posePub;
+ros::Publisher filteredPosePub;
 
 DetectorTracker * detectorTracker;
 
@@ -42,13 +43,16 @@ void imageCallback(const sensor_msgs::Image::ConstPtr& msg)
   //ROS_INFO("detectorTracker took %f seconds", ((float)(end - start))/CLOCKS_PER_SEC);
   sensor_msgs::RegionOfInterest data = detectorTracker->getRegionOfInterest();
   roiPub.publish(data);
-  if(use_mbt)
+  if(use_mbt){
 	posePub.publish(dynamic_cast<TrackMarkerModel*>(detectorTracker)->getPoseStamped());
+	filteredPosePub.publish(dynamic_cast<TrackMarkerModel*>(detectorTracker)->getPoseStamped());
+  }
 }
 
 // Reads params, or sets default parameters if parameters are not found
 void readParams(int& camSizeX, int& camSizeY, bool& use_mbt, int& trackerType,
-				std::string& camTopic, std::string& pubTopic, std::string& poseTopic)
+				std::string& camTopic, std::string& pubTopic, std::string& poseTopic,
+				std::string& filteredPoseTopic)
 {
   if(!(ros::param::get("/visptracker/cam_resolution_x", camSizeX) && 
 	 ros::param::get("/visptracker/cam_resolution_y", camSizeY)))
@@ -64,7 +68,7 @@ void readParams(int& camSizeX, int& camSizeY, bool& use_mbt, int& trackerType,
 	ROS_WARN("Cannot read use_mbt parameter.");
 	use_mbt = true;
   }
-  ROS_INFO("Tracker will %s use model-based tracking", (use_mbt ? "" : "NOT"));
+  ROS_INFO("Tracker will %suse model-based tracking", (use_mbt ? "" : "NOT "));
 
   if(ros::param::get("/visptracker/tracker_type", trackerType) && (trackerType < 0 || trackerType > 5))
   {
@@ -91,9 +95,16 @@ void readParams(int& camSizeX, int& camSizeY, bool& use_mbt, int& trackerType,
   if(!ros::param::get("/visptracker/pose_topic", poseTopic))
   {
 	ROS_WARN("Cannot get pose topic string parameter");
-	pubTopic = "visptracker_pose";
+	poseTopic = "visptracker_pose";
   }
   ROS_INFO("Set pose topic name as %s", poseTopic.c_str());
+
+  if(!ros::param::get("/visptracker/pose_topic_filtered", filteredPoseTopic))
+  {
+	ROS_WARN("Cannot get filtered pose topic string parameter");
+	filteredPoseTopic = "visptracker_pose_filtered";
+  }
+  ROS_INFO("Set filtered pose topic name as %s", filteredPoseTopic.c_str());
 }
 
 int main(int argc, char ** argv)
@@ -103,9 +114,9 @@ int main(int argc, char ** argv)
   
   // read parameters first
   int camSizeX, camSizeY, trackerType;
-  std::string camTopic, pubTopic, poseTopic;
+  std::string camTopic, pubTopic, poseTopic, filteredPoseTopic;
   ROS_INFO("Reading parameters...");
-  readParams(camSizeX, camSizeY, use_mbt, trackerType, camTopic, pubTopic, poseTopic);
+  readParams(camSizeX, camSizeY, use_mbt, trackerType, camTopic, pubTopic, poseTopic, filteredPoseTopic);
   ROS_INFO("Parameters loaded successfully!");
 
   if(use_mbt){
@@ -130,6 +141,7 @@ int main(int argc, char ** argv)
   ros::Subscriber sub = n.subscribe(camTopic, 1, imageCallback);
   roiPub = n.advertise<sensor_msgs::RegionOfInterest>(pubTopic, 1000);
   posePub = n.advertise<geometry_msgs::PoseStamped>(poseTopic, 1000);
+  filteredPosePub = n.advertise<geometry_msgs::PoseStamped>(filteredPoseTopic, 1000);
 
   detectorTracker->enableTrackerDisplay(true);
   

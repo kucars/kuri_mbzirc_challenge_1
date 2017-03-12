@@ -38,6 +38,7 @@ TrackMarkerModel::TrackMarkerModel(int x, int y)
   me->setSampleStep(4);
 
   setExtrapolateMaxTime(250.0); // 1 quarter of a second maximum
+  setMeanFilterSize(5);
   lastTrackTime = 0;
 
   // initialize tracker
@@ -116,6 +117,30 @@ void TrackMarkerModel::getROIFromBoxPoints(std::vector<vpImagePoint>& boxPoints,
   outRoi.do_rectify = true;
 }
 
+static void cmoToPose(vpHomogeneousMatrix& cmo, geometry_msgs::Pose& pose)
+{
+  vpTranslationVector trans;
+  vpQuaternionVector q;
+
+  cmo.extract(trans);
+  cmo.extract(q);
+
+  pose.position.x = trans[0] * 0.01; // convert to meters
+  pose.position.y = trans[1] * 0.01; // convert to meters
+  pose.position.z = trans[2] * 0.01; // convert to meters
+  pose.orientation.x = q.x();
+  pose.orientation.y = q.y();
+  pose.orientation.z = q.z();
+  pose.orientation.w = q.w();
+}
+
+static void poseToCmo(geometry_msgs::Pose& pose, vpHomogeneousMatrix& cmo)
+{
+  vpTranslationVector trans(pose.position.x * 100.0, pose.position.y * 100.0, pose.position.z * 100.0);  // convert to cm
+  vpQuaternionVector quat(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+  cmo.buildFrom(trans, quat);
+}
+
 bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 {
   clock_t now = clock();
@@ -186,32 +211,33 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 		// first face is the square, get the 4 points and get pixel coordinates
 		std::vector<vpMbtPolygon *> &poly = faces.getPolygon();
 		if(poly[0]->getNbPoint() == 5){
-		  // This is the face we want (yes it has 5 points, but the last one is the same as the first)
-		  std::vector<vpImagePoint> boxpoints;
-		  getBoxPoints(cMo, marker3DPoints, boxpoints, cam);
-
-		  getROIFromBoxPoints(boxpoints, roi);
-
-		  vpTranslationVector trans;
-		  vpQuaternionVector q;
-		  cMo.extract(trans);
-		  cMo.extract(q);
-
-		  //ROS_INFO("Translation %f %f %f", trans[0], trans[1], trans[2]);
-		  //ROS_INFO("Quats: %f %f %f %f", q[0], q[1], q[2], q[3]);
 		  resultIsPredicted = false;
-		  pose.header = msg->header;
-		  pose.pose.position.x = trans[0] * 0.01; // convert to meters
-		  pose.pose.position.y = trans[1] * 0.01;
-		  pose.pose.position.z = trans[2] * 0.01;
-		  pose.pose.orientation.x = q.x();
-		  pose.pose.orientation.y = q.y();
-		  pose.pose.orientation.z = q.z();
-		  pose.pose.orientation.w = q.w();
+		  geometry_msgs::PoseStamped newPose, newFilteredPose;
 
-		  // update the extrapolator
-		  extrapolator.poseUpdate(pose.pose, CLOCK_TO_MSECS(now-lastTrackTime));
+		  // Get the raw pose
+		  newPose.header = msg->header;
+		  cmoToPose(cMo, newPose.pose);
+
+		  // filter it
+		  meanFilter.cMoUpdate(cMo);
+		  newFilteredPose.header = msg->header;
+		  filteredCMo = meanFilter.getMeanCMo();
+		  cmoToPose(filteredCMo, newFilteredPose.pose);
+
+		  // update the extrapolator with the filtered pose
+		  extrapolator.poseUpdate(newFilteredPose.pose, CLOCK_TO_MSECS(now-lastTrackTime)); // TODO use the messag header
 		  lastTrackTime = now;
+
+		  // set the current pose
+		  pose = newPose;
+		  filteredPose = newFilteredPose;
+
+		  // get ROIs and set them
+		  std::vector<vpImagePoint> boxpoints, filteredBoxPoints;
+		  getBoxPoints(cMo, marker3DPoints, boxpoints, cam);
+		  getBoxPoints(filteredCMo, marker3DPoints, filteredBoxPoints, cam);
+		  getROIFromBoxPoints(boxpoints, roi);
+		  getROIFromBoxPoints(filteredBoxPoints, filteredROI);
 
 		}else{
 		  ROS_WARN("We're tracking the model, but we can't find a face with 5 points.. this shouldn't happen..");
@@ -224,13 +250,13 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  ROS_WARN("vpException: %s", e.getMessage());
 	  detectedState = false;
 	  trackingState = false;
-  	  resultIsPredicted = true;
+	  resultIsPredicted = true;
 	}
   }else{
-	// We can't track, but it's been a short time since the last time to track.. so...
-	// Extrapolate the last pose if it's not too far off from the last update
 	if(CLOCK_TO_MSECS(now-lastTrackTime) < extrapolateMaxTime)
 	{
+	  // We can't track, but it's been a short time since the last time to track.. so...
+	  // Extrapolate the last pose if it's not too far off from the last update
 	  if(!resultIsPredicted) // print some text if first time we extrapolate
 		ROS_INFO("Tracking lost, extrapolating from last 2 pose positions for %f seconds", extrapolateMaxTime);
 
@@ -241,31 +267,23 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 
 	  // calculate ROI from extrapolated pose
 	  // create a cMo matrix from the extrapolated pose
-	  vpTranslationVector trans(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
-	  vpQuaternionVector quat(pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w);
-	  cMo.buildFrom(trans, quat);
+	  poseToCmo(pose.pose, cMo);
+	  filteredCMo = cMo; // filtered and raw are equal
+	  filteredPose = pose;
 
 	  // use it to get 4 points in the image and update the ROI
 	  std::vector<vpImagePoint> boxpoints;
 	  getBoxPoints(cMo, marker3DPoints, boxpoints, cam);
 	  getROIFromBoxPoints(boxpoints, roi);
+	  filteredROI = roi;
 
 	}else{
 	  // we're not tracking and it's been a long time since we tracked.
 	  // So stop extrapolating and set everything to 0
-	  roi.x_offset = 0;
-	  roi.y_offset = 0;
-	  roi.width = 0;
-	  roi.height = 0;
-	  roi.do_rectify = false;
-
-	  pose.pose.position.x = 0 ;
-	  pose.pose.position.y = 0;
-	  pose.pose.position.z = 0;
-	  pose.pose.orientation.x = 0;
-	  pose.pose.orientation.y = 0;
-	  pose.pose.orientation.z = 0;
-	  pose.pose.orientation.w = 0;
+	  roi = sensor_msgs::RegionOfInterest();
+	  filteredROI = sensor_msgs::RegionOfInterest();
+	  pose = geometry_msgs::PoseStamped();
+	  filteredPose = geometry_msgs::PoseStamped();
 
 	  reset();
 	}
@@ -274,9 +292,12 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
   // draw the bounding box (blue if predicted)
   if(trackingState || resultIsPredicted)
   {
-	const vpColor& c = resultIsPredicted ? vpColor::blue : vpColor::green;
+	const vpColor& c = resultIsPredicted ? vpColor::blue : vpColor::red;
 	vpDisplay::displayRectangle(I, vpImagePoint(roi.y_offset, roi.x_offset), roi.width, roi.height, c,
-	  false, 3);
+								false, 3);
+	if(!resultIsPredicted)
+	  vpDisplay::displayRectangle(I, vpImagePoint(filteredROI.y_offset, filteredROI.x_offset), filteredROI.width,
+								filteredROI.height, vpColor::green, false, 3);
   }
 
   if(displayEnabled)
@@ -291,6 +312,8 @@ void TrackMarkerModel::reset()
   detectedState = false;
   trackingState = false;
   resultIsPredicted = false;
+  extrapolator.reset();
+  meanFilter.reset();
 }
 
 void TrackMarkerModel::setCameraParameters(double px, double py, double u0, double v0)
@@ -308,6 +331,8 @@ bool TrackMarkerModel::isTracking() { return trackingState; }
 sensor_msgs::RegionOfInterest TrackMarkerModel::getRegionOfInterest(){ return roi; }
 
 geometry_msgs::PoseStamped TrackMarkerModel::getPoseStamped(){ return pose; }
+
+geometry_msgs::PoseStamped TrackMarkerModel::getFilteredPoseStamped(){ return filteredPose; }
 
 double TrackMarkerModel::getExtrapolateMaxTime(){ return extrapolateMaxTime; }
 
@@ -358,3 +383,4 @@ void TrackMarkerModel::setExtrapolateMaxTime(double newTime)
 	extrapolateMaxTime = newTime;
 }
 
+void TrackMarkerModel::setMeanFilterSize(unsigned int newSize){ meanFilter.setMaxSize(newSize); }

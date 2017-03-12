@@ -1,5 +1,6 @@
 #include "posemeanfilter.h"
 #include <assert.h>
+#include <visp/vpQuaternionVector.h>
 
 PoseMeanFilter::PoseMeanFilter()
 {
@@ -18,54 +19,89 @@ PoseMeanFilter::PoseMeanFilter(unsigned int numPoses)
 	maxSize = 5;
 }
 
-void PoseMeanFilter::poseUpdate(geometry_msgs::Pose& newPose)
+void PoseMeanFilter::cMoUpdate(vpHomogeneousMatrix& newCmo)
 {
   assert(poses.size() <= maxSize);
   if(poses.size() == maxSize)
   {
 	poses.pop_front();
   }
-  poses.push_back(newPose);
+  poses.push_back(newCmo);
 }
 
-geometry_msgs::Pose PoseMeanFilter::getMeanPose()
+/*Taken from: https://stackoverflow.com/questions/21241965/average-transformation-matrix-for-a-list-of-transformations
+ * start with q* as above
+	do until convergence
+	  for each input quaternion i (index)
+		  diff = q[i] * inverse(q*)
+		  u[i] = log(diff, base q*)
+	  //Now perform the linear blend
+	  adapt := zero quaternion
+	  weights := 0
+	  for each input quaternion i
+		  adapt += weight[i] * u[i]
+		  weights += weight[i]
+	  adapt *= 1/weights
+	  adaptInOriginalSpace = q* ^ adapt    (^ is the power operator)
+	  q* = adaptInOriginalSpace * q*
+	  */
+static vpQuaternionVector calcSphericalAverage(std::vector<vpQuaternionVector>& quats)
+{
+  //TODO
+
+}
+
+/* Linear blend, taken from https://stackoverflow.com/questions/21241965/average-transformation-matrix-for-a-list-of-transformations */
+/* q* = w1 * q1 + w2 * q2 + ... + w2 * qn
+   normalize q*
+ */
+static vpQuaternionVector linearBlend(std::vector<vpQuaternionVector>& quats)
+{
+  if(quats.size() == 0)
+	return vpQuaternionVector();
+
+  if(quats.size() == 1)
+	return quats[0];
+
+  double w = 1.0 / ((double)quats.size()); // equal weights for all quaternions (for now...)
+  vpQuaternionVector blended = quats[0];
+  for(int i = 1; i < quats.size(); i++)
+  {
+	blended = blended + (quats[i] * w);
+  }
+  blended.normalize();
+
+  return blended;
+}
+
+vpHomogeneousMatrix PoseMeanFilter::getMeanCMo()
 {
   if(poses.size() == 0)
-	return geometry_msgs::Pose();
+	return vpHomogeneousMatrix(); // identity matrix
 
-  if(poses.size() == 1){
+  if(poses.size() == 1)
 	return poses[0];
-  }
 
-  // there's probably a faster way of doing this but I'm lazy
-  double vector[7];
-  memset(vector, sizeof(vector), 0);
+  vpTranslationVector sumT;
 
-  for(std::deque<geometry_msgs::Pose>::iterator it = poses.begin(); it != poses.end(); ++it)
+  std::vector<vpQuaternionVector> quats;
+  for(std::deque<vpHomogeneousMatrix>::iterator it = poses.begin(); it != poses.end(); ++it)
   {
-	vector[0] += it->position.x;
-	vector[1] += it->position.y;
-	vector[2] += it->position.z;
-	vector[3] += it->orientation.x;
-	vector[4] += it->orientation.y;
-	vector[5] += it->orientation.z;
-	vector[6] += it->orientation.w;
+	vpTranslationVector t;
+	vpQuaternionVector r;
+	it->extract(t);
+	it->extract(r);
+	sumT = sumT + t;
+	quats.push_back(r);
   }
+  vpQuaternionVector averageQuat = linearBlend(quats);
 
-  for(int i = 0; i < sizeof(vector) / sizeof(double); i++){
-	vector[i] /= poses.size();
-  }
+  sumT = sumT / (double)poses.size();
 
-  geometry_msgs::Pose averagePose;
-  averagePose.position.x = vector[0];
-  averagePose.position.y = vector[1];
-  averagePose.position.z = vector[2];
-  averagePose.orientation.x = vector[3];
-  averagePose.orientation.y = vector[4];
-  averagePose.orientation.z = vector[5];
-  averagePose.orientation.w = vector[6];
+  vpHomogeneousMatrix averageMatrix;
+  averageMatrix.buildFrom(sumT, averageQuat);
 
-  return averagePose;
+  return averageMatrix;
 }
 
 void PoseMeanFilter::reset()

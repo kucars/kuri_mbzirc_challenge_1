@@ -2,10 +2,10 @@
 #define POSEMEANFILTER_H
 
 #include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
+#include <visp/vpHomogeneousMatrix.h>
 #include <deque>
 
-// Takes in a bunch of poses and is able to give you their average
+// Takes in a bunch of poses (as vpHomogeoneous Matrices) and is able to give you their average
 class PoseMeanFilter
 {
 public:
@@ -15,8 +15,10 @@ public:
 
   PoseMeanFilter(unsigned int numPoses);
 
-  void poseUpdate(geometry_msgs::Pose& newPose);
-  geometry_msgs::Pose getMeanPose();
+  //void poseUpdate(geometry_msgs::Pose& newPose);
+  //geometry_msgs::Pose getMeanPose();
+  void cMoUpdate(vpHomogeneousMatrix& newCmo);
+  vpHomogeneousMatrix getMeanCMo();
 
   void reset();
   void setMaxSize(unsigned int newSize);
@@ -25,7 +27,8 @@ public:
 
 private:
   unsigned int maxSize; // maxPoses
-  std::deque<geometry_msgs::Pose> poses;
+  //std::deque<geometry_msgs::Pose> poses;
+  std::deque<vpHomogeneousMatrix> poses;
 };
 
 #endif

@@ -6,4 +6,5 @@ visptracker:
   cam_topic: '/downward_cam/camera/image'
   pub_topic: 'visptracker_data'
   pose_topic: 'visptracker_pose'
+  pose_topic_filtered: 'visptracker_pose_filtered'
 
