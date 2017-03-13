@@ -74,6 +74,7 @@ private:
   geometry_msgs::PoseStamped filteredPose;
 
   clock_t lastTrackTime; // stores the last time we successfully tracked
+  clock_t lastDetectTime;
   double extrapolateMaxTime;
   
   vpImage<unsigned char> I;

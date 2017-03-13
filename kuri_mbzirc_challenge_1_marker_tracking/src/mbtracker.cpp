@@ -40,6 +40,7 @@ TrackMarkerModel::TrackMarkerModel(int x, int y)
   setExtrapolateMaxTime(250.0); // 1 quarter of a second maximum
   setMeanFilterSize(8);
   lastTrackTime = 0;
+  lastDetectTime = 0;
 
   // initialize tracker
   tracker = new vpMbEdgeTracker();
@@ -153,10 +154,15 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
   vpCameraParameters cam;
   tracker->getCameraParameters(cam);
 
-  if(!detectedState)
+  detectedState = false;
+  if(!trackingState ||
+	  (trackingState && (CLOCK_TO_MSECS(now-lastDetectTime) > 500.0))
+  ){
 	detectedState = detector.detect(msg);
+	lastDetectTime = now;
+  }
   
-  if(detectedState && !trackingState)
+  if(detectedState)
   {
 	// get points from detector
 	double detectorPoints[8];
@@ -258,7 +264,7 @@ bool TrackMarkerModel::detectAndTrack(const sensor_msgs::Image::ConstPtr& msg)
 	  // We can't track, but it's been a short time since the last time to track.. so...
 	  // Extrapolate the last pose if it's not too far off from the last update
 	  if(!resultIsPredicted) // print some text if first time we extrapolate
-		ROS_INFO("Tracking lost, extrapolating from last 2 pose positions for %f seconds", extrapolateMaxTime);
+		ROS_INFO("Tracking lost, extrapolating from last 2 pose positions for %f milliseconds", extrapolateMaxTime);
 
 	  pose.header = msg->header;
 	  pose.pose = extrapolator.extrapolate(CLOCK_TO_MSECS(now-lastTrackTime));
