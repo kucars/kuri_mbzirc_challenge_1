@@ -38,7 +38,7 @@ TrackMarkerModel::TrackMarkerModel(int x, int y)
   me->setSampleStep(4);
 
   setExtrapolateMaxTime(250.0); // 1 quarter of a second maximum
-  setMeanFilterSize(5);
+  setMeanFilterSize(8);
   lastTrackTime = 0;
 
   // initialize tracker

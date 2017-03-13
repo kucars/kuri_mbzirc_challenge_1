@@ -15,10 +15,10 @@ public:
 
   PoseMeanFilter(unsigned int numPoses);
 
-  //void poseUpdate(geometry_msgs::Pose& newPose);
-  //geometry_msgs::Pose getMeanPose();
   void cMoUpdate(vpHomogeneousMatrix& newCmo);
   vpHomogeneousMatrix getMeanCMo();
+  double getStddev();
+  double getVariance();
 
   void reset();
   void setMaxSize(unsigned int newSize);
@@ -27,8 +27,12 @@ public:
 
 private:
   unsigned int maxSize; // maxPoses
-  //std::deque<geometry_msgs::Pose> poses;
   std::deque<vpHomogeneousMatrix> poses;
+
+  vpHomogeneousMatrix averageMatrix; // mean only
+  vpHomogeneousMatrix filteredMatrix; // outliers removed
+  double stddev; // standard deviation
+  double variance;
 };
 
 #endif

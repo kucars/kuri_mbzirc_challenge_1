@@ -124,7 +124,7 @@ int main(int argc, char ** argv)
 	tmm->setMaskSize(5);
 	tmm->setMaskNumber(180);
 	tmm->setRange(30);
-	tmm->setThreshold(30000);
+	tmm->setThreshold(50000);
 	tmm->setMu1(0.5);
 	tmm->setMu2(0.5);
 	tmm->setSampleStep(4);
