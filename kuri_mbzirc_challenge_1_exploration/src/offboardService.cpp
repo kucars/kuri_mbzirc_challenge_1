@@ -16,7 +16,7 @@ mavros_msgs::WaypointPush pushService;
 mavros_msgs::Waypoint waypoint;
 mavros_msgs::CommandTOL srv_takeoff;
 
-bool takeOFFflag = true ;
+bool takeOFFflag = true;
 
 enum SYSTEM_STATES{
     AUTO_MISSION =0 ,
@@ -90,7 +90,6 @@ bool missionType(kuri_mbzirc_challenge_1_msgs::Mission::Request  &req,
 
 int main(int argc, char **argv)
 {
-
     ros::init(argc, argv, "missionService");
     ros::NodeHandle nh;
     ros::ServiceServer systemStateServer   = nh.advertiseService("systemState", missionType);

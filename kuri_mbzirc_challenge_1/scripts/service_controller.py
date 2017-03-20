@@ -40,6 +40,7 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry 
 import math
 import tf
+import numpy as np
 
 class ControllerService:
 	def __init__(self):
@@ -63,6 +64,51 @@ class ControllerService:
                 self.explorationPoseX   = rospy.get_param("FixPoseX")
                 self.explorationPoseY   = rospy.get_param("FixPoseY")
                 self.explorationPoseZ   = rospy.get_param("FixPoseZ")
+                self.landingZoneX       = []
+                self.landingZoneY       = []
+                self.numPoints          = 10
+                self.firstReading       = True
+                #Time delta between updates
+                self.dt = 0.1
+                # Initial State: location (x,y) and velocity x', y'
+                self.x = None
+                # External Motion Vector
+                self.u = np.matrix([[0.], [0.], [0.], [0.]])
+                # Initial Uncertainty
+                self.P = np.matrix([[1000   ,0   ,0   ,0   ],
+                               [0   ,1000   ,0   ,0   ],
+                               [0   ,0   ,1000,0   ],
+                               [0   ,0   ,0   ,1000]
+                               ])
+                # Next state function
+                self.F = np.matrix([[1 ,0 ,self.dt ,0  ],
+                               [0 ,1 ,0  ,self.dt],
+                               [0 ,0 ,1  ,0  ],
+                               [0 ,0 ,0  ,1  ]])
+                # Measurement Function
+                self.H = np.matrix([[1 ,0 ,0  ,0],
+                               [0 ,1 ,0  ,0]])
+                # Measurement Uncertainty
+                self.R = np.matrix([[0.1,0  ],
+                               [0  ,0.1]])
+                # Identity Matrix
+                self.I = np.matrix([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+        #x,y,x',y'
+        def particleFilter(self,measurement):
+            # measurement update
+            Z = np.matrix([measurement])
+            y = Z.transpose() - (self.H * self.x)
+            S = self.H * self.P * self.H.transpose() + self.R
+            K = self.P * self.H.transpose() * S.getI()
+            self.x = self.x + (self.K * self.y)
+            P = (self.I - (self.K * self.H)) * self.P
+            np.set_printoptions(formatter={'float': '{: 0.4f}'.format})
+            # prediction
+            self.x = (self.F * self.x) + self.u
+            self.P = self.F * self.P * F.transpose()
+            print 'X:', self.x
+            print 'P:', self.P
+            return self.x, self.P
 
         def landingZonePose(self , poseMsg):
           if poseMsg.pose.position.x != 0 :
@@ -79,6 +125,24 @@ class ControllerService:
                 self.landingMsg.pose.position.x = -1 * poseMsg.pose.position.y; #staticDistance[0] + (poseMsg.pose.position.x * math.cos( theta1 + yaw) )
                 self.landingMsg.pose.position.y = -1 * poseMsg.pose.position.x; #staticDistance[1] + (poseMsg.pose.position.y * math.sin( theta1 + yaw) )  #poseMsg.pose.position.y
                 self.landingMsg.pose.position.z = -1 * poseMsg.pose.position.z ; #staticDistance[2] + (poseMsg.pose.position.z * math.cos( 3.14159265359) ) #poseMsg.pose.position.z
+                self.landingZoneX.append(self.landingMsg.pose.position.x)
+                self.landingZoneY.append(self.landingMsg.pose.position.y)
+
+                if self.firstReading:
+                  self.firstReading = False
+                  x = np.matrix([[self.landingMsg.pose.position.x], [self.landingMsg.pose.position.y], [0.], [0.]])
+                measurement = [self.landingMsg.pose.position.x,self.landingMsg.pose.position.y]
+
+                self.particleFilter(measurement)
+                if len(self.landingZoneX) > self.numPoints:
+                  self.landingZoneX = self.landingZoneX[self.numPoints:]
+                  self.landingZoneY = self.landingZoneY[self.numPoints:]
+                if len(self.landingZoneX) ==self.numPoints:
+                  pol = np.polyfit(self.landingZoneX, self.landingZoneY, 3)
+                  p = np.poly1d(pol)
+                  self.landingMsg.pose.position.x = self.landingMsg.pose.position.x + 5
+                  self.landingMsg.pose.position.y = p(self.landingMsg.pose.position.x)
+
                 #print "Received a new tracked pose x:", self.landingMsg.pose.position.x, " y:",self.landingMsg.pose.position.y," z:",self.landingMsg.pose.position.z
           else:
               self.trackingLostCounter = self.trackingLostCounter + 1

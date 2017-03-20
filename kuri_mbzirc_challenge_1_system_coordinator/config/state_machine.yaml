@@ -1,4 +1,4 @@
 # state machine configurations
-FixPoseX : -24  
+FixPoseX : 0
 FixPoseY : 0 
-FixPoseZ : 18
+FixPoseZ : 15

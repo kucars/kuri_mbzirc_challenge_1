@@ -48,7 +48,7 @@ class checkMarkerDetection(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state MARKER_DETECTION')
         landingZonePoseSub = rospy.Subscriber('/visptracker_pose', PoseStamped, self.landingZonePose)
-        time.sleep(1.0)
+        time.sleep(0.1)
         if not self.trackingLost:
           userdata.srvtype = 2
           print "I will call for Landing"
@@ -66,7 +66,7 @@ class Challenge1():
 	sm = smach.StateMachine(outcomes=['Done'])
 	with sm:	  
 		def exploration_response_cb(userdata, response):
-                        print "Exploration Response" , response.navResponse
+                        print "Exploration Response:" , response.navResponse
 			if response.navResponse == 'succeeded' :
 			   return 'succeeded' 			  
 			else :

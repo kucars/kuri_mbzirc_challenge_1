@@ -50,6 +50,7 @@ private:
   ros::Publisher velPub;
   ros::Publisher pidPub;
   ros::Subscriber goalSub;
+  ros::Publisher localPosePub;
   //ros::Subscriber globalPoseSub;
   ros::Subscriber compassSub;
   ros::ServiceClient armingClient;

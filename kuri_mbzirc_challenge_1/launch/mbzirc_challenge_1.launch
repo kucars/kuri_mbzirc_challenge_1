@@ -3,7 +3,7 @@
 <launch>
 
     <!-- MAVROS posix SITL environment launch script -->
-    <arg name="enable_truck_motion" default="false"/>
+    <arg name="enable_truck_motion" default="true"/>
     <arg name="headless" default="false"/>
     <arg name="gui" default="true"/>
     <arg name="debug" default="false"/>

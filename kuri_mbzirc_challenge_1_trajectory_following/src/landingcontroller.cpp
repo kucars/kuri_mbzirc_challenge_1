@@ -21,6 +21,7 @@ TruckFollower::TruckFollower(const ros::NodeHandle &_nh, const ros::NodeHandle &
   nh(_nh),
   nhPrivate(_nhPrivate)
 {
+  localPosePub = nh.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local", 10);
   velPub           = nh.advertise <geometry_msgs ::TwistStamped >("/mavros/setpoint_velocity/cmd_vel", 1);
   pidPub           = nh.advertise <kuri_mbzirc_challenge_1_msgs::pidData >("/pidData", 1);
   goalSub          = nh.subscribe("/visptracker_pose_tunnel", 1000, &TruckFollower::goalCallback,this);
@@ -60,7 +61,8 @@ TruckFollower::TruckFollower(const ros::NodeHandle &_nh, const ros::NodeHandle &
     }
     else
     {
-      velPub.publish(twist);
+      //velPub.publish(twist);
+      localPosePub.publish(goalPose);
     }
     pidPub.publish(pidMsg);
     ros:: spinOnce ();
@@ -167,8 +169,6 @@ void TruckFollower::goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg
       twist.twist.angular.z = 0;
     }
   }
-
-
 }
 
 void TruckFollower::headingCallback(const std_msgs::Float64::ConstPtr& msg)
